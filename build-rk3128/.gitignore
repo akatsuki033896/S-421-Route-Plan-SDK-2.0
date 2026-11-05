@@ -1,0 +1,4 @@
+# build-rk3128 构建中间产物（不入库）
+obj/
+output/
+build/
