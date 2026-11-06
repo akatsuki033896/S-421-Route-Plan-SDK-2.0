@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataSet xmlns:gml="http://www.opengis.net/gml/3.2" 
+		 xmlns:s100_profile="http://www.iho.int/S-100/profile/s100_gmlProfile" 
+		 xmlns:xlink="http://www.w3.org/1999/xlink" 
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		 gml:id="S421.abc.abcde.00003" 
+         xmlns:S100="http://www.iho.int/s100gml/5.0"
+         xmlns:S421="http://www.iec.ch/S421/2.0"
+         xsi:schemaLocation="http://www.iec.ch/S421/2.0 S-421_GMLSchema_0502.xsd"
+         xmlns="http://www.iec.ch/S421/2.0"
+		 >
+    <gml:boundedBy>
+        <gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/4326">
+            <gml:lowerCorner>5.9225659 105.8900548</gml:lowerCorner>
+            <gml:upperCorner>22.0758351 118.594834</gml:upperCorner>
+        </gml:Envelope>
+    </gml:boundedBy>
+	<S100:DatasetIdentificationInformation>
+		<S100:encodingSpecification>S-100 Part 10b</S100:encodingSpecification>
+		<S100:encodingSpecificationEdition>1.0</S100:encodingSpecificationEdition>
+		<S100:productIdentifier>S-421</S100:productIdentifier>
+		<S100:productEdition>2.0</S100:productEdition>
+		<S100:applicationProfile>S-421 GML</S100:applicationProfile>
+		<S100:datasetFileIdentifier/>
+		<S100:datasetTitle>S-421.Full.Test.Data</S100:datasetTitle>
+		<S100:datasetReferenceDate>2026-05-24</S100:datasetReferenceDate>
+		<S100:datasetLanguage>ENG</S100:datasetLanguage>
+		<S100:datasetAbstract></S100:datasetAbstract>
+		<S100:datasetTopicCategory>transportation</S100:datasetTopicCategory>
+		<S100:datasetPurpose>base</S100:datasetPurpose>
+		<S100:updateNumber>1</S100:updateNumber>
+	</S100:DatasetIdentificationInformation>	
+    <members>
+        <RouteSchedules gml:id="RTE.SCHEDS">
+            <routeSchedule xlink:title="routeScheduleComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeSchedule" xlink:href="#RTE.SCHED.1" />
+        </RouteSchedules>
+        <RouteSchedule gml:id="RTE.SCHED.1">
+            <routeScheduleID>1</routeScheduleID>
+            <routeScheduleName>Full TDS Schedule </routeScheduleName>
+            <routeScheduleCollection xlink:href="#RTE.SCHEDS" xlink:title="routeScheduleComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleCollection" />
+            <routeScheduleManual xlink:title="routeScheduleManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleManual" xlink:href="#RTE.SCHED.1.MAN" />
+            <routeScheduleCalculated xlink:title="routeScheduleCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleCalculated" xlink:href="#RTE.SCHED.1.CALC" />
+        </RouteSchedule>
+        <RouteScheduleManual gml:id="RTE.SCHED.1.MAN">
+            <routeScheduleCollection xlink:href="#RTE.SCHED.1" xlink:title="routeScheduleManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleCollection" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.1" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.2" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.3" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.4" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.5" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.6" />
+        </RouteScheduleManual>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.1">
+            <routeWaypointID>1</routeWaypointID>
+            <routeScheduleElementETD>2020-02-18T00:00:00</routeScheduleElementETD>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementManualCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.2">
+            <routeWaypointID>2</routeWaypointID>
+            <routeScheduleElementPlanSOG>20.0</routeScheduleElementPlanSOG>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementManualCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.3">
+            <routeWaypointID>3</routeWaypointID>
+            <routeScheduleElementPlanSOG>2</routeScheduleElementPlanSOG>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementManualCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.4">
+            <routeWaypointID>4</routeWaypointID>
+            <routeScheduleElementPlanSOG>20.0</routeScheduleElementPlanSOG>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementManualCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.5">
+            <routeWaypointID>5</routeWaypointID>
+            <routeScheduleElementPlanSOG>17</routeScheduleElementPlanSOG>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementManualCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.6">
+            <routeWaypointID>6</routeWaypointID>
+            <routeScheduleElementPlanSOG>20.0</routeScheduleElementPlanSOG>
+            <routeScheduleElementETD>2020-02-27T21:38:42</routeScheduleElementETD>
+            <routeScheduleElementETA>2020-02-27T23:38:42</routeScheduleElementETA>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementManualCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleCalculated gml:id="RTE.SCHED.1.CALC">
+            <routeScheduleCollection xlink:href="#RTE.SCHED.1" xlink:title="routeScheduleCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleCollection" />
+            <routeScheduleElement xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.CALC.ELEMENT.1" />
+            <routeScheduleElement xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.CALC.ELEMENT.2" />
+            <routeScheduleElement xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.CALC.ELEMENT.3" />
+            <routeScheduleElement xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.CALC.ELEMENT.4" />
+            <routeScheduleElement xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.CALC.ELEMENT.5" />
+            <routeScheduleElement xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElement" xlink:href="#RTE.SCHED.1.CALC.ELEMENT.6" />
+        </RouteScheduleCalculated>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.CALC.ELEMENT.1">
+            <routeWaypointID>1</routeWaypointID>
+            <routeScheduleElementETD>2020-02-18T00:00:00</routeScheduleElementETD>
+            <routeScheduleElementCalculatedCollection xlink:href="#RTE.SCHED.1.CALC" xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementCalculatedCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.CALC.ELEMENT.2">
+            <routeWaypointID>2</routeWaypointID>
+            <routeScheduleElementETA>2020-02-18T00:04:22</routeScheduleElementETA>
+            <routeScheduleElementCalculatedCollection xlink:href="#RTE.SCHED.1.CALC" xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementCalculatedCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.CALC.ELEMENT.3">
+            <routeWaypointID>3</routeWaypointID>
+            <routeScheduleElementETA>2020-02-25T17:36:25</routeScheduleElementETA>
+            <routeScheduleElementCalculatedCollection xlink:href="#RTE.SCHED.1.CALC" xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementCalculatedCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.CALC.ELEMENT.4">
+            <routeWaypointID>4</routeWaypointID>
+            <routeScheduleElementETA>2020-02-27T14:17:34</routeScheduleElementETA>
+            <routeScheduleElementCalculatedCollection xlink:href="#RTE.SCHED.1.CALC" xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementCalculatedCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.CALC.ELEMENT.5">
+            <routeWaypointID>5</routeWaypointID>
+            <routeScheduleElementETA>2020-02-27T19:26:51</routeScheduleElementETA>
+            <routeScheduleElementCalculatedCollection xlink:href="#RTE.SCHED.1.CALC" xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementCalculatedCollection" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.CALC.ELEMENT.6">
+            <routeWaypointID>6</routeWaypointID>
+            <routeScheduleElementETA>2020-02-27T21:38:42</routeScheduleElementETA>
+            <routeScheduleElementCalculatedCollection xlink:href="#RTE.SCHED.1.CALC" xlink:title="routeScheduleElementCalculatedComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeScheduleElementCalculatedCollection" />
+        </RouteScheduleElement>
+        <RouteInfo gml:id="RTE.INFO">
+            <routeInfoName>S-421.Full.Test.Data</routeInfoName>
+            <routeInfoAuthor>Andy Nibbs</routeInfoAuthor>
+            <routeInfoEditionTime>2026-05-24T00:00:00</routeInfoEditionTime>
+            <routeInfoDescription>Full data</routeInfoDescription>
+            <routeInfoStatus>Planned</routeInfoStatus>
+            <routeInfoVesselName>HMS Liverpool</routeInfoVesselName>
+            <routeInfoVesselVoyage>99A</routeInfoVesselVoyage>
+        </RouteInfo>
+        <Route gml:id="RTE">
+            <routeFormatVersion>2.0</routeFormatVersion>
+            <routeID>9ce44ee8-5345-479c-b53d-43e34b97eba6</routeID>
+            <routeEditionNo>1</routeEditionNo>
+            <routeInfo xlink:href="#RTE.INFO" xlink:title="routeInfoComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeInfo" />
+            <routeSchedules xlink:href="#RTE.SCHEDS" xlink:title="routeSchedulesComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeSchedules" />
+            <routeWaypoints xlink:href="#RTE.WPTS" xlink:title="routeWaypointsComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypoints" />
+            <routeActionPoints xlink:href="#RTE.APTS" xlink:title="routeActionPointsComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeActionPoints" />
+        </Route>
+        <RouteWaypoints gml:id="RTE.WPTS">
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypoint" xlink:href="#RTE.WPT.1" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypoint" xlink:href="#RTE.WPT.2" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypoint" xlink:href="#RTE.WPT.3" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypoint" xlink:href="#RTE.WPT.4" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypoint" xlink:href="#RTE.WPT.5" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypoint" xlink:href="#RTE.WPT.6" />
+            <routeWaypointsCollection xlink:title="routeWaypointsComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointsCollection" xlink:href="#RTE" />
+        </RouteWaypoints>
+        <RouteWaypoint gml:id="RTE.WPT.1">
+            <routeWaypointID>1</routeWaypointID>
+            <routeWaypointName>JPNGO NE</routeWaypointName>
+            <routeWaypointTurnRadius>2.0</routeWaypointTurnRadius>
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointCollection" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_jITbk">
+                        <gml:pos srsName="http://www.opengis.net/def/crs/EPSG/0/4326">22.0758351 118.594834</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.2">
+            <routeWaypointID>2</routeWaypointID>
+            <routeWaypointName>SE1</routeWaypointName>
+            <routeWaypointTurnRadius>2.0</routeWaypointTurnRadius>
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointCollection" />
+            <routeWaypointLeg xlink:title="routeWaypointLegComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointLeg" xlink:href="#RTE.WPT.2.LEG" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_FEIs1">
+                        <gml:pos srsName="http://www.opengis.net/def/crs/EPSG/0/4326">19.2995235 116.176209</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.3">
+            <routeWaypointID>3</routeWaypointID>
+            <routeWaypointName>SE2</routeWaypointName>
+            <routeWaypointTurnRadius>2.0</routeWaypointTurnRadius>
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointCollection" />
+            <routeWaypointLeg xlink:title="routeWaypointLegComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointLeg" xlink:href="#RTE.WPT.3.LEG" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_smWz5">
+                        <gml:pos srsName="http://www.opengis.net/def/crs/EPSG/0/4326">16.5628522 114.3051923</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.4">
+            <routeWaypointID>4</routeWaypointID>
+            <routeWaypointName>SE3</routeWaypointName>
+            <routeWaypointTurnRadius>2.0</routeWaypointTurnRadius>
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointCollection" />
+            <routeWaypointLeg xlink:title="routeWaypointLegComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointLeg" xlink:href="#RTE.WPT.4.LEG" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_km1Qj">
+                        <gml:pos srsName="http://www.opengis.net/def/crs/EPSG/0/4326">13.3872954 112.7079853</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.5">
+            <routeWaypointID>5</routeWaypointID>
+            <routeWaypointName>SE4</routeWaypointName>
+            <routeWaypointTurnRadius>2.0</routeWaypointTurnRadius>
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointCollection" />
+            <routeWaypointLeg xlink:title="routeWaypointLegComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointLeg" xlink:href="#RTE.WPT.5.LEG" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_8taVF">
+                        <gml:pos srsName="http://www.opengis.net/def/crs/EPSG/0/4326">8.9535741 109.6961093</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.6">
+            <routeWaypointID>6</routeWaypointID>
+            <routeWaypointName>SE5</routeWaypointName>
+            <routeWaypointTurnRadius>2.0</routeWaypointTurnRadius>
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointCollection" />
+            <routeWaypointLeg xlink:title="routeWaypointLegComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointLeg" xlink:href="#RTE.WPT.6.LEG" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_PoWQx">
+                        <gml:pos srsName="http://www.opengis.net/def/crs/EPSG/0/4326">5.9225659 105.8900548</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypointLeg gml:id="RTE.WPT.2.LEG">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:href="#RTE.WPT.2" xlink:title="routeWaypointLegComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointLegCollection" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.3.LEG">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:href="#RTE.WPT.3" xlink:title="routeWaypointLegComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointLegCollection" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.4.LEG">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:href="#RTE.WPT.4" xlink:title="routeWaypointLegComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointLegCollection" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.5.LEG">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:href="#RTE.WPT.5" xlink:title="routeWaypointLegComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointLegCollection" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.6.LEG">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:href="#RTE.WPT.6" xlink:title="routeWaypointLegComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeWaypointLegCollection" />
+        </RouteWaypointLeg>
+        <RouteActionPoints gml:id="RTE.APTS">
+            <routeActionPoint xlink:title="routeActionPointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeActionPoint" xlink:href="#RTE.APTS.1" />
+            <routeActionPointsCollection xlink:title="routeActionPointsComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeActionPointsCollection" xlink:href="#RTE" />
+        </RouteActionPoints>
+        <RouteActionPoint gml:id="RTE.APTS.1">
+            <routeActionPointID>6</routeActionPointID>
+            <routeActionPointName>VTS Report</routeActionPointName>
+            <routeActionPointRequiredAction>Report</routeActionPointRequiredAction>
+            <routeActionPointRequiredActionDescription>VTS Report</routeActionPointRequiredActionDescription>
+            <routeActionPointCollection xlink:href="#RTE.APTS" xlink:title="routeActionPointComposition" xlink:arcrole="http://www.iho.int/gml/roles/routeActionPointCollection" />
+        </RouteActionPoint>
+    </members>
+</DataSet>

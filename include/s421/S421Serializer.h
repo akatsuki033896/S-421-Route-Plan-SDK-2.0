@@ -222,7 +222,7 @@ private:
      * @param ids       ID 映射。
      */
     void writeLeg(pugi::xml_node& parent, const RouteWaypointLeg& leg,
-                  const Position& startPos, const s421::optional<Position>& endPos,
+                  const GM_Point& startPos, const s421::optional<GM_Point>& endPos,
                   int legIndex, const IdMap& ids);
 
     /**
@@ -278,7 +278,7 @@ private:
      * @param pos        坐标。
      * @param pointGmlId 生成的点对象 `gml:id`。
      */
-    void writePointGeometry(pugi::xml_node& parent, const Position& pos,
+    void writePointGeometry(pugi::xml_node& parent, const GM_Point& pos,
                             const std::string& pointGmlId);
 
     /**
@@ -288,8 +288,8 @@ private:
      * @param end         终点坐标。
      * @param curveGmlId  生成的曲线对象 `gml:id`。
      */
-    void writeCurveGeometry(pugi::xml_node& parent, const Position& start,
-                            const Position& end, const std::string& curveGmlId);
+    void writeCurveGeometry(pugi::xml_node& parent, const GM_Point& start,
+                            const GM_Point& end, const std::string& curveGmlId);
 
     // ---- 厂商扩展写入 ----
 
@@ -301,7 +301,7 @@ private:
      * @param baseId      生成 `gml:id` 所用的基础 ID。
      */
     void writeExtensions(pugi::xml_node& parent, const char* wrapperName,
-                         const std::vector<RouteExtension>& extensions,
+                         const std::vector<RouteExtensions>& extensions,
                          const std::string& baseId);
 
     // ---- 辅助方法 ----
@@ -311,12 +311,12 @@ private:
      * @param pos 坐标。
      * @return 形如 `"22.075835 118.594834"` 的字符串（精度由 setCoordinatePrecision 决定）。
      */
-    std::string formatPos(const Position& pos) const;
+    std::string formatPos(const GM_Point& pos) const;
 
     /**
      * @brief 写入 xlink 引用元素。
      *
-     * 输出形如 `<routeInfo xlink:href="#RTE.INFO" xlink:title="routeInfoComposition"/>`。
+     * 输出形如 `<routeInfo xlink:href="#RTE.INFO" xlink:title="routeInfoComGM_Point"/>`。
      * 其中 `xlink:title` 由「父元素 + 子元素」查表（`xlinkTitleFor`）推导。
      *
      * @param parent    父节点。

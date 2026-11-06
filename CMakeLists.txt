@@ -1,35 +1,20 @@
 cmake_minimum_required(VERSION 3.15)
 project(s421_sdk VERSION 2.0.0 LANGUAGES C CXX)
 
-# ============================================================
-#  S-421 SDK 跨平台构建
-#
-#  产物：
-#    - 静态库 s421   （Windows: s421.lib / Linux: libs421.a）
-#    - 命令行工具 s421_tool  （可选，S421_BUILD_TOOL）
-#    - 示例程序 s421_demo    （可选，S421_BUILD_EXAMPLES）
-#
-#  默认静态库；切动态库：cmake -DBUILD_SHARED_LIBS=ON
-# ============================================================
-
-# ---- C++ 标准 ----
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# 位置无关代码：静态库将来也能被链进 .so/.dll
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# ---- 输出目录归一化（便于打包分发）----
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")  # 静态库
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")  # 动态库
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")  # 可执行
 
-# ---- 构建选项 ----
-option(BUILD_SHARED_LIBS  "构建为动态库（默认 OFF=静态库；ON 则出 .dll/.so）" OFF)
-option(S421_BUILD_TOOL    "构建 s421_tool 命令行工具" ON)
-option(S421_BUILD_EXAMPLES "构建示例程序 s421_demo" ON)
-option(S421_INSTALL       "生成 install 目标（库 + 头文件，便于分发）" ON)
+option(BUILD_SHARED_LIBS  "build dll" OFF) # OFF: build lib, ON: build dll
+option(S421_BUILD_TOOL    "build s421_tool" ON)
+option(S421_BUILD_EXAMPLES "build s421_demo" ON)
+option(S421_INSTALL       "generate install target(lib and headers)" ON)
 
 # 编译期日志级别（见 include/s421/S421Logger.h 的 S421_LOG_LEVEL）
 set(S421_LOG_LEVEL 4 CACHE STRING "编译期日志级别: 0=全关 .. 4=全开（默认运行时过滤）")
@@ -72,9 +57,6 @@ set(ZLIB_SOURCES
     ${ZLIB_DIR}/zutil.c
 )
 
-# ============================================================
-#  库 target: s421
-# ============================================================
 add_library(s421
     src/S421Parser.cpp
     src/S421Serializer.cpp
@@ -85,7 +67,7 @@ add_library(s421
     third_party/pugixml/pugixml.cpp
     ${ZLIB_SOURCES}
 )
-add_library(s421::s421 ALIAS s421)   # 命名空间别名，方便集成方
+add_library(s421::s421 ALIAS s421)
 
 # 公共头：调用方链接后自动拿到 include/ 路径
 target_include_directories(s421
@@ -97,23 +79,12 @@ target_include_directories(s421
         ${CMAKE_CURRENT_BINARY_DIR}                        # 生成的 zconf.h
 )
 
-# zlib 已作为源码编进 s421（见 ZLIB_SOURCES），不再链接 zlibstatic；
-# s421.lib / libs421.a 因此自包含，调用方链接时无需额外 zlib。
-
-# 第三方符号隔离（PRIVATE：只编进 s421，不传播给调用方）
-# zlib + pugixml 以源码编入 s421。若保持原名导出（inflate/deflate/pugi::*），
-# 调用方一旦再链接自己的 zlib/pugixml（另一版本）就会 multiple definition 冲突。
-# 用符号重命名把第三方符号改成 s421 私有名：
-#   pugi=s421_pugi  : pugixml 的 namespace pugi → s421_pugi
-#   Z_PREFIX        : zlib 的 inflate→z_inflate / deflate→z_deflate ...
-# PRIVATE 保证只对 s421（含其内嵌的 zlib/pugixml 源码）生效；调用方完全无感
-# （s421 公开 API 不涉及 pugi::，仅 private 方法用，调用方不引用）。
+# 内嵌zlib和pugi::xml
 target_compile_definitions(s421 PRIVATE pugi=s421_pugi Z_PREFIX)
 
-# 编译期日志级别（PUBLIC：保证库与调用方一致）
+# 编译期日志级别
 target_compile_definitions(s421 PUBLIC S421_LOG_LEVEL=${S421_LOG_LEVEL})
 
-# MSVC：源文件含 UTF-8 中文（/utf-8）；zlib 用旧 CRT 函数，屏蔽其弃用警告
 if(MSVC)
     target_compile_options(s421 PRIVATE /utf-8)
     target_compile_definitions(s421 PRIVATE _CRT_SECURE_NO_DEPRECATE _CRT_NONSTDC_NO_DEPRECATE)
@@ -132,23 +103,17 @@ else()
     target_compile_definitions(s421 PUBLIC S421_STATIC_DEFINE)
 endif()
 
-# ============================================================
-#  命令行工具 target: s421_tool（可选）
-# ============================================================
+# S421-tool
 if(S421_BUILD_TOOL AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
     add_executable(s421_tool src/main.cpp)
     target_link_libraries(s421_tool PRIVATE s421)
-    # main.cpp include 的 s421 头里有 pugi:: 声明（private 方法），需与库一致重命名，
-    # 否则头里看到的 pugi:: 与库内的 s421_pugi:: 符号不一致。
     target_compile_definitions(s421_tool PRIVATE pugi=s421_pugi)
     if(MSVC)
         target_compile_options(s421_tool PRIVATE /utf-8)
     endif()
 endif()
 
-# ============================================================
-#  示例 target: s421_demo（可选）
-# ============================================================
+# S421-demo
 if(S421_BUILD_EXAMPLES)
     add_executable(s421_demo examples/demo.cpp)
     target_link_libraries(s421_demo PRIVATE s421)
@@ -157,9 +122,6 @@ if(S421_BUILD_EXAMPLES)
     endif()
 endif()
 
-# ============================================================
-#  安装规则（库 + 头文件）
-# ============================================================
 if(S421_INSTALL)
     include(GNUInstallDirs)
     install(TARGETS s421

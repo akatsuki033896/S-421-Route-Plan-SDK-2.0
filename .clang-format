@@ -1,0 +1,32 @@
+# 基础风格基于 LLVM
+BasedOnStyle: LLVM
+
+# 缩进与大括号配置
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+BreakBeforeBraces: Allman  # 关键：使用 Allman 风格（大括号独占一行，即 MSVC 默认）
+
+# 访问权限修饰符（public/private）的缩进
+AccessModifierOffset: -4
+
+# 换行与对齐
+ColumnLimit: 120           # 超过多少字符自动换行（根据喜好调整）
+PointerAlignment: Left     # 指针 * 靠左对齐，例如 int* p; （MSVC 常见风格）
+DerivePointerAlignment: false
+
+# 允许短代码块写在同一行
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+
+# 命名空间处理
+FixNamespaceComments: true
+ShortNamespaceLines: 0
+
+# 其它细节调整
+AlignAfterOpenBracket: Align
+AlignEscapedNewlines: Right
+AlignOperands: Align
+AlignTrailingComments: true

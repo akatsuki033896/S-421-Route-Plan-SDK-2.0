@@ -298,9 +298,9 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
             const auto& wp = dataset.route->waypoints[i];
             if (!wp || !wp->leg) continue;
 
-            const Position startPos = wp->geometry;
+            const GM_Point startPos = wp->geometry;
             // 终点 = 下一个航点的坐标。末尾航点没有"下一个"时保持空
-            s421::optional<Position> endPos;
+            s421::optional<GM_Point> endPos;
             if (i + 1 < dataset.route->waypoints.size() && dataset.route->waypoints[i + 1]) {
                 endPos = dataset.route->waypoints[i + 1]->geometry;
             }
@@ -554,8 +554,8 @@ void S421Serializer::writeWaypoint(pugi::xml_node& parent, const RouteWaypoint& 
 //  writeLeg
 // ============================================================
 void S421Serializer::writeLeg(pugi::xml_node& parent, const RouteWaypointLeg& leg,
-                               const Position& startPos,
-                               const s421::optional<Position>& endPos,
+                               const GM_Point& startPos,
+                               const s421::optional<GM_Point>& endPos,
                                int legIndex, const IdMap& ids) {
     auto it = ids.legIds.find(legIndex);
     std::string legGmlId = (it != ids.legIds.end()) ? it->second : "RTE.WPT.LEG." + std::to_string(legIndex);
@@ -768,7 +768,7 @@ void S421Serializer::writeScheduleElement(pugi::xml_node& parent,
              "http://www.iho.int/gml/roles/routeScheduleElementCollection");
 }
 
-void S421Serializer::writePointGeometry(pugi::xml_node& parent, const Position& pos,
+void S421Serializer::writePointGeometry(pugi::xml_node& parent, const GM_Point& pos,
                                          const std::string& pointGmlId) {
     pugi::xml_node geom = parent.append_child("geometry");
     pugi::xml_node prop = geom.append_child("S100:pointProperty");
@@ -780,7 +780,7 @@ void S421Serializer::writePointGeometry(pugi::xml_node& parent, const Position& 
 }
 
 void S421Serializer::writeCurveGeometry(pugi::xml_node& parent,
-                                         const Position& start, const Position& end,
+                                         const GM_Point& start, const GM_Point& end,
                                          const std::string& curveGmlId) {
     pugi::xml_node geom = parent.append_child("geometry");
     pugi::xml_node prop = geom.append_child("S100:curveProperty");
@@ -824,7 +824,7 @@ void S421Serializer::writeExtensions(pugi::xml_node& parent, const char* wrapper
     }
 }
 
-std::string S421Serializer::formatPos(const Position& pos) const {
+std::string S421Serializer::formatPos(const GM_Point& pos) const {
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(coordPrecision_)
         << pos.lat << " " << pos.lon;
@@ -836,40 +836,40 @@ static const char* xlinkTitleFor(const char* parentName, const char* childName) 
     struct Entry { const char* parent; const char* child; const char* title; };
     static const Entry kTable[] = {
         // ---- Route 顶层引用 ----
-        {"Route",                "routeInfo",                          "routeInfoComposition"},
-        {"Route",                "routeSchedules",                     "routeSchedulesComposition"},
-        {"Route",                "routeWaypoints",                     "routeWaypointsComposition"},
-        {"Route",                "routeActionPoints",                  "routeActionPointsComposition"},
+        {"Route",                "routeInfo",                          "routeInfoComGM_Point"},
+        {"Route",                "routeSchedules",                     "routeSchedulesComGM_Point"},
+        {"Route",                "routeWaypoints",                     "routeWaypointsComGM_Point"},
+        {"Route",                "routeActionPoints",                  "routeActionPointsComGM_Point"},
         // ---- RouteWaypoints 容器 ----
-        {"RouteWaypoints",       "routeWaypointsCollection",           "routeWaypointsComposition"},
-        {"RouteWaypoints",       "routeWaypoint",                      "routeWaypointComposition"},
+        {"RouteWaypoints",       "routeWaypointsCollection",           "routeWaypointsComGM_Point"},
+        {"RouteWaypoints",       "routeWaypoint",                      "routeWaypointComGM_Point"},
         // ---- RouteWaypoint 自身 ----
-        {"RouteWaypoint",        "routeWaypointCollection",            "routeWaypointComposition"},
-        {"RouteWaypoint",        "routeWaypointLeg",                   "routeWaypointLegComposition"},
+        {"RouteWaypoint",        "routeWaypointCollection",            "routeWaypointComGM_Point"},
+        {"RouteWaypoint",        "routeWaypointLeg",                   "routeWaypointLegComGM_Point"},
         {"RouteWaypoint",        "targetWaypoint",                     "routeWaypointScheduleElement"},
         // ---- RouteWaypointLeg ----
-        {"RouteWaypointLeg",     "routeWaypointLegCollection",         "routeWaypointLegComposition"},
+        {"RouteWaypointLeg",     "routeWaypointLegCollection",         "routeWaypointLegComGM_Point"},
         // ---- RouteSchedules 容器 / RouteSchedule ----
-        {"RouteSchedules",       "routeSchedule",                      "routeScheduleComposition"},
-        {"RouteSchedule",        "routeScheduleCollection",            "routeScheduleComposition"},
-        {"RouteSchedule",        "routeScheduleManual",                "routeScheduleManualComposition"},
-        {"RouteSchedule",        "routeScheduleCalculated",            "routeScheduleCalculatedComposition"},
-        {"RouteSchedule",        "routeScheduleRecommended",           "routeScheduleRecommendedComposition"},
+        {"RouteSchedules",       "routeSchedule",                      "routeScheduleComGM_Point"},
+        {"RouteSchedule",        "routeScheduleCollection",            "routeScheduleComGM_Point"},
+        {"RouteSchedule",        "routeScheduleManual",                "routeScheduleManualComGM_Point"},
+        {"RouteSchedule",        "routeScheduleCalculated",            "routeScheduleCalculatedComGM_Point"},
+        {"RouteSchedule",        "routeScheduleRecommended",           "routeScheduleRecommendedComGM_Point"},
         // ---- Manual / Calculated / Recommended 容器 ----
-        {"RouteScheduleManual",       "routeScheduleCollection",              "routeScheduleManualComposition"},
-        {"RouteScheduleManual",       "routeScheduleElement",                 "routeScheduleElementManualComposition"},
-        {"RouteScheduleCalculated",   "routeScheduleCollection",              "routeScheduleCalculatedComposition"},
-        {"RouteScheduleCalculated",   "routeScheduleElement",                 "routeScheduleElementCalculatedComposition"},
-        {"RouteScheduleRecommended",  "routeScheduleCollection",              "routeScheduleRecommendedComposition"},
-        {"RouteScheduleRecommended",  "routeScheduleElement",                 "routeScheduleElementRecommendedComposition"},
+        {"RouteScheduleManual",       "routeScheduleCollection",              "routeScheduleManualComGM_Point"},
+        {"RouteScheduleManual",       "routeScheduleElement",                 "routeScheduleElementManualComGM_Point"},
+        {"RouteScheduleCalculated",   "routeScheduleCollection",              "routeScheduleCalculatedComGM_Point"},
+        {"RouteScheduleCalculated",   "routeScheduleElement",                 "routeScheduleElementCalculatedComGM_Point"},
+        {"RouteScheduleRecommended",  "routeScheduleCollection",              "routeScheduleRecommendedComGM_Point"},
+        {"RouteScheduleRecommended",  "routeScheduleElement",                 "routeScheduleElementRecommendedComGM_Point"},
         // ---- ScheduleElement 回指各自的集合 ----
-        {"RouteScheduleElement", "routeScheduleElementManualCollection",      "routeScheduleElementManualComposition"},
-        {"RouteScheduleElement", "routeScheduleElementCalculatedCollection",  "routeScheduleElementCalculatedComposition"},
-        {"RouteScheduleElement", "routeScheduleElementRecommendedCollection", "routeScheduleElementRecommendedComposition"},
+        {"RouteScheduleElement", "routeScheduleElementManualCollection",      "routeScheduleElementManualComGM_Point"},
+        {"RouteScheduleElement", "routeScheduleElementCalculatedCollection",  "routeScheduleElementCalculatedComGM_Point"},
+        {"RouteScheduleElement", "routeScheduleElementRecommendedCollection", "routeScheduleElementRecommendedComGM_Point"},
         // ---- RouteActionPoints 容器 / RouteActionPoint ----
-        {"RouteActionPoints",    "routeActionPointsCollection",        "routeActionPointsComposition"},
-        {"RouteActionPoints",    "routeActionPoint",                   "routeActionPointComposition"},
-        {"RouteActionPoint",     "routeActionPointCollection",         "routeActionPointComposition"},
+        {"RouteActionPoints",    "routeActionPointsCollection",        "routeActionPointsComGM_Point"},
+        {"RouteActionPoints",    "routeActionPoint",                   "routeActionPointComGM_Point"},
+        {"RouteActionPoint",     "routeActionPointCollection",         "routeActionPointComGM_Point"},
     };
 
     for (const auto& e : kTable) {
@@ -881,7 +881,7 @@ static const char* xlinkTitleFor(const char* parentName, const char* childName) 
 }
 
 // writeRef - 写一个引用元素
-//   <routeInfo xlink:href="#RTE.INFO" xlink:title="routeInfoComposition"/>
+//   <routeInfo xlink:href="#RTE.INFO" xlink:title="routeInfoComGM_Point"/>
 //
 // 【xlink:href 的 # 规则】
 //   本项目所有 gml:id 都以 'R' 开头（RTE、RTE.INFO、RTE.WPT.1…）。

@@ -16,6 +16,8 @@ generate VS project and build in Visual Studio.
 
 **CRT/ABI should be same as Visual Studio version.**
 
+**JadeECS: x86, Debug, VS2022**
+
 - output(release): `build-win32/win32`
 - output(debug): `build-win32/win32d`
 

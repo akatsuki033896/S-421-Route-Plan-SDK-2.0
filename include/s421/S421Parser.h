@@ -93,65 +93,65 @@ private:
      * @param infoNode `RouteInfo` 节点。
      * @return 解析结果。
      */
-    std::unique_ptr<RouteInfo> parseRouteInfo(pugi::xml_node infoNode);
+    RouteInfo parseRouteInfo(pugi::xml_node infoNode);
 
     /**
      * @brief 解析 RouteWaypoint 元素。
      * @param wpNode `RouteWaypoint` 节点。
      * @return 解析结果。
      */
-    std::unique_ptr<RouteWaypoint> parseWaypoint(pugi::xml_node wpNode);
+    RouteWaypoint parseWaypoint(pugi::xml_node wpNode);
 
     /**
      * @brief 解析 RouteWaypointLeg 元素。
      * @param legNode `RouteWaypointLeg` 节点。
      * @return 解析结果。
      */
-    std::unique_ptr<RouteWaypointLeg> parseLeg(pugi::xml_node legNode);
+    RouteWaypointLeg parseLeg(pugi::xml_node legNode);
 
     /**
      * @brief 解析 RouteActionPoint 元素。
      * @param apNode `RouteActionPoint` 节点。
      * @return 解析结果。
      */
-    std::unique_ptr<RouteActionPoint> parseActionPoint(pugi::xml_node apNode);
+    RouteActionPoint parseActionPoint(pugi::xml_node apNode);
 
     /**
      * @brief 解析 RouteSchedule 及其子元素。
      * @param schedNode `RouteSchedule` 节点。
      * @return 解析结果。
      */
-    std::unique_ptr<RouteSchedule> parseSchedule(pugi::xml_node schedNode);
+    RouteSchedule parseSchedule(pugi::xml_node schedNode);
 
     /**
      * @brief 解析 RouteScheduleElement 元素。
      * @param elemNode `RouteScheduleElement` 节点。
      * @return 解析结果。
      */
-    std::unique_ptr<RouteScheduleElement> parseScheduleElement(pugi::xml_node elemNode);
+    RouteScheduleElement parseScheduleElement(pugi::xml_node elemNode);
 
     /**
      * @brief 解析 RouteExtensions 元素。
      * @param extNode `routeExtensions` 节点。
      * @return 解析结果。
      */
-    RouteExtension parseExtension(pugi::xml_node extNode);
+    RouteExtensions parseExtension(pugi::xml_node extNode);
 
     // ---- 辅助方法 ----
 
     /**
-     * @brief 解析几何坐标（Point → Position）。
+     * @brief 解析几何坐标（Point → GM_Point）。
      * @param geometryNode `geometry` 节点。
      * @return 解析出的坐标；无法解析时返回原点。
      */
-    Position parsePointGeometry(pugi::xml_node geometryNode);
+    GM_Point parsePointGeometry(pugi::xml_node geometryNode);
 
     /**
-     * @brief 解析 `gml:pos` 字符串 `"lat lon"` → Position。
+     * @brief 解析 `gml:pos` 字符串 `"lat lon"` → GM_Point。
      * @param posStr 坐标文本，格式为 `"<纬度> <经度>"`。
      * @return 解析出的坐标。
      */
-    Position parseGmlPos(const std::string& posStr);
+    GM_Point parseGmlPos(const std::string& posStr);
 
     /**
      * @brief 安全获取子节点文本（不存在则返回 optional 的空值）。

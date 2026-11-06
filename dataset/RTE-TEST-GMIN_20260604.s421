@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset xmlns:gml="http://www.opengis.net/gml/3.2"
+         xmlns:s100_profile="http://www.iho.int/S-100/profile/s100_gmlProfile" 
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         gml:id="S421.abc.abcde.00001"
+         xmlns:S100="http://www.iho.int/s100gml/5.0"
+         xmlns:S421="http://www.iec.ch/S421/2.0"
+         xsi:schemaLocation="http://www.iec.ch/S421/2.0 S-421_GMLSchema_0502.xsd"
+         xmlns="http://www.iec.ch/S421/2.0"
+         >
+    <gml:boundedBy>
+        <gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+            <gml:lowerCorner />
+            <gml:upperCorner />
+        </gml:Envelope>
+    </gml:boundedBy>
+    <S100:DatasetIdentificationInformation>
+        <S100:encodingSpecification>S-100 Part 10b</S100:encodingSpecification>
+        <S100:encodingSpecificationEdition>1.0</S100:encodingSpecificationEdition>
+        <S100:productIdentifier>S-421</S100:productIdentifier>
+        <S100:productEdition>2.0</S100:productEdition>
+        <S100:applicationProfile>test</S100:applicationProfile>
+        <S100:datasetFileIdentifier>421Minimum generic test data</S100:datasetFileIdentifier>
+        <S100:datasetTitle>Minimum Test Route Dataset</S100:datasetTitle>
+        <S100:datasetReferenceDate>2026-05-11</S100:datasetReferenceDate>
+        <S100:datasetLanguage>eng</S100:datasetLanguage>
+        <S100:datasetTopicCategory>transportation</S100:datasetTopicCategory>
+        <S100:datasetPurpose>base</S100:datasetPurpose>
+        <S100:updateNumber>0</S100:updateNumber>
+    </S100:DatasetIdentificationInformation>
+    <members>
+        <RouteInfo gml:id="RTE.INFO">
+            <routeInfoName>MinimumTestRoute</routeInfoName>
+            <routeInfoStatus>Initial</routeInfoStatus>
+        </RouteInfo>
+        <Route gml:id="RTE">
+            <routeFormatVersion>2.0</routeFormatVersion>
+            <routeID>Route-1</routeID>
+            <routeEditionNo>1</routeEditionNo>
+            <routeInfo xlink:href="#DZ1Zv" xlink:title="routeInfoComposition" />
+        </Route>
+    </members>
+</Dataset>

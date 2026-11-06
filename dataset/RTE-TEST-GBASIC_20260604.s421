@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dataset xmlns:gml="http://www.opengis.net/gml/3.2"
+         xmlns:s100_profile="http://www.iho.int/S-100/profile/s100_gmlProfile" 
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         gml:id="S421.abc.abcde.00002"
+         xmlns:S100="http://www.iho.int/s100gml/5.0"
+         xmlns:S421="http://www.iec.ch/S421/2.0"
+         xsi:schemaLocation="http://www.iec.ch/S421/2.0 S-421_GMLSchema_0502.xsd"
+         xmlns="http://www.iec.ch/S421/2.0"
+         >
+    <gml:boundedBy>
+        <gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+            <gml:lowerCorner>4.4938137 105.9733644</gml:lowerCorner>
+            <gml:upperCorner>22.2442299 118.1042359</gml:upperCorner>
+        </gml:Envelope>
+    </gml:boundedBy>
+    <S100:DatasetIdentificationInformation>
+        <S100:encodingSpecification>S-100 Part 10b</S100:encodingSpecification>
+        <S100:encodingSpecificationEdition>1.0</S100:encodingSpecificationEdition>
+        <S100:productIdentifier>S-421</S100:productIdentifier>
+        <S100:productEdition>2.0</S100:productEdition>
+        <S100:applicationProfile>test</S100:applicationProfile>
+        <S100:datasetFileIdentifier>421Basic generic test data</S100:datasetFileIdentifier>
+        <S100:datasetTitle>Basic Test Route Dataset</S100:datasetTitle>
+        <S100:datasetReferenceDate>2026-05-11</S100:datasetReferenceDate>
+        <S100:datasetLanguage>eng</S100:datasetLanguage>
+        <S100:datasetTopicCategory>transportation</S100:datasetTopicCategory>
+        <S100:datasetPurpose>base</S100:datasetPurpose>
+        <S100:updateNumber>0</S100:updateNumber>
+    </S100:DatasetIdentificationInformation>
+    <members>
+        <RouteInfo gml:id="RTE.INFO">
+            <routeInfoName>BasicGenericTestData</routeInfoName>
+            <routeInfoStatus>Planned</routeInfoStatus>
+			<!-- <routeInfoStatus>Confirmed</routeInfoStatus> -->
+        </RouteInfo>
+		<!-- </RouteInformation> -->
+        <RouteSchedules gml:id="RTE.SCHEDS">
+            <routeSchedule xlink:title="routeScheduleComposition" xlink:href="#RTE.SCHED.1" />
+        </RouteSchedules>
+        <RouteSchedule gml:id="RTE.SCHED.1">
+            <routeScheduleID>1</routeScheduleID>
+            <routeScheduleCollection xlink:href="#RTE.SCHEDS" xlink:title="routeScheduleComposition" />
+            <routeScheduleManual xlink:title="routeScheduleManualComposition" xlink:href="#RTE.SCHED.1.MAN" />
+        </RouteSchedule>
+        <RouteScheduleManual gml:id="RTE.SCHED.1.MAN">
+            <routeScheduleCollection xlink:href="#RTE.SCHED.1" xlink:title="routeScheduleManualComposition" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.1" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.2" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.3" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.4" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.5" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.6" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.7" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.8" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.9" />
+            <routeScheduleElement xlink:title="routeScheduleElementManualComposition" xlink:href="#RTE.SCHED.1.MAN.ELEMENT.10" />
+        </RouteScheduleManual>
+		<!-- </ManualRouteSchedule> -->
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.1">
+            <routeWaypointID>1</routeWaypointID>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.2">
+            <routeWaypointID>2</routeWaypointID>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.3">
+            <routeWaypointID>3</routeWaypointID>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.4">
+            <routeWaypointID>4</routeWaypointID>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.5">
+            <routeWaypointID>5</routeWaypointID>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.6">
+            <routeWaypointID>6</routeWaypointID>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.7">
+            <routeWaypointID>7</routeWaypointID>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.8">
+            <routeWaypointID>8</routeWaypointID>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.9">
+            <routeWaypointID>9</routeWaypointID>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" />
+        </RouteScheduleElement>
+        <RouteScheduleElement gml:id="RTE.SCHED.1.MAN.ELEMENT.10">
+            <routeWaypointID>10</routeWaypointID>
+            <routeScheduleElementManualCollection xlink:href="#RTE.SCHED.1.MAN" xlink:title="routeScheduleElementManualComposition" />
+        </RouteScheduleElement>
+        <Route gml:id="RTE">
+            <routeFormatVersion>2.0</routeFormatVersion>
+			<!-- <routeFormatVersion>2.0.1</routeFormatVersion> -->
+            <routeID>Route-2</routeID>
+            <routeEditionNo>1</routeEditionNo>
+            <routeInfo xlink:href="#RTE.INFO" xlink:title="routeInfoComposition" />
+            <routeSchedules xlink:href="#RTE.SCHEDS" xlink:title="routeSchedulesComposition" />
+            <routeWaypoints xlink:href="#RTE.WPTS" xlink:title="routeWaypointsComposition" />
+            <routeActionPoints xlink:title="routeActionPointsComposition" xlink:href="#RTE.APTS" />
+        </Route>
+        <RouteWaypoints gml:id="RTE.WPTS">
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:href="#RTE.WPT.1" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:href="#RTE.WPT.2" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:href="#RTE.WPT.3" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:href="#RTE.WPT.4" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:href="#RTE.WPT.5" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:href="#RTE.WPT.6" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:href="#RTE.WPT.7" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:href="#RTE.WPT.8" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:href="#RTE.WPT.9" />
+            <routeWaypoint xlink:title="routeWaypointComposition" xlink:href="#RTE.WPT.10" />
+            <routeWaypointsCollection xlink:title="routeWaypointsComposition" xlink:href="#RTE" />
+        </RouteWaypoints>
+        <RouteWaypoint gml:id="RTE.WPT.1">
+            <routeWaypointID>1</routeWaypointID>
+            <routeWaypointName>WP1</routeWaypointName>
+            <routeWaypointTurnRadius>15</routeWaypointTurnRadius>
+			<!-- <routeWaypointTurnRadius>370</routeWaypointTurnRadius> -->
+            <targetWaypoint xlink:href="#RTE.SCHED.1.MAN.ELEMENT.1" xlink:title="routeWaypointScheduleElement" />
+            <routeWaypointCollection xlink:href="RTE.WPTS" xlink:title="routeWaypointComposition" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_Apm4P" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+                        <gml:pos>22.2442299 118.1042359</gml:pos>
+						<!-- <gml:pos>118.1042359 22.2442299</gml:pos> -->
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.2">
+            <routeWaypointID>2</routeWaypointID>
+            <routeWaypointName>WP2</routeWaypointName>
+            <routeWaypointTurnRadius>15</routeWaypointTurnRadius>
+            <targetWaypoint xlink:href="#RTE.SCHED.1.MAN.ELEMENT.2" xlink:title="routeWaypointScheduleElement" />
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" />
+            <routeWaypointLeg xlink:href="#RTE.WPT.LEG.1" xlink:title="routeWaypointLegComposition" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_MhK87" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+                        <gml:pos>20.7860128 116.4340427</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.3">
+            <routeWaypointID>3</routeWaypointID>
+            <routeWaypointName>WP3</routeWaypointName>
+            <routeWaypointTurnRadius>15</routeWaypointTurnRadius>
+            <targetWaypoint xlink:href="#RTE.SCHED.1.MAN.ELEMENT.3" xlink:title="routeWaypointScheduleElement" />
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" />
+            <routeWaypointLeg xlink:href="#RTE.WPT.LEG.2" xlink:title="routeWaypointLegComposition" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_mGxkA" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+                        <gml:pos>19.1060479 115.0568668</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.4">
+            <routeWaypointID>4</routeWaypointID>
+            <routeWaypointName>WP4</routeWaypointName>
+            <routeWaypointTurnRadius>15</routeWaypointTurnRadius>
+            <targetWaypoint xlink:href="#RTE.SCHED.1.MAN.ELEMENT.4" xlink:title="routeWaypointScheduleElement" />
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" />
+            <routeWaypointLeg xlink:href="#RTE.WPT.LEG.3" xlink:title="routeWaypointLegComposition" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_hhxYw" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+                        <gml:pos>17.1570596 114.1192153</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.5">
+            <routeWaypointID>5</routeWaypointID>
+            <routeWaypointName>WP5</routeWaypointName>
+            <routeWaypointTurnRadius>15</routeWaypointTurnRadius>
+            <targetWaypoint xlink:href="#RTE.SCHED.1.MAN.ELEMENT.5" xlink:title="routeWaypointScheduleElement" />
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" />
+            <routeWaypointLeg xlink:href="#RTE.WPT.LEG.4" xlink:title="routeWaypointLegComposition" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_aSb82" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+                        <gml:pos>14.9327529 113.2108638</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.6">
+            <routeWaypointID>6</routeWaypointID>
+            <routeWaypointName>WP6</routeWaypointName>
+            <routeWaypointTurnRadius>15</routeWaypointTurnRadius>
+            <targetWaypoint xlink:href="#RTE.SCHED.1.MAN.ELEMENT.6" xlink:title="routeWaypointScheduleElement" />
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" />
+            <routeWaypointLeg xlink:href="#RTE.WPT.LEG.5" xlink:title="routeWaypointLegComposition" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_eJp8I" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+                        <gml:pos>12.1415098 112.9178492</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.7">
+            <routeWaypointID>7</routeWaypointID>
+            <routeWaypointName>WP7</routeWaypointName>
+            <routeWaypointTurnRadius>15</routeWaypointTurnRadius>
+            <targetWaypoint xlink:href="#RTE.SCHED.1.MAN.ELEMENT.7" xlink:title="routeWaypointScheduleElement" />
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" />
+            <routeWaypointLeg xlink:href="#RTE.WPT.LEG.6" xlink:title="routeWaypointLegComposition" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_GBLEn" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+                        <gml:pos>9.6963651 112.6541345</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.8">
+            <routeWaypointID>8</routeWaypointID>
+            <routeWaypointName>WP8</routeWaypointName>
+            <routeWaypointTurnRadius>15</routeWaypointTurnRadius>
+            <targetWaypoint xlink:href="#RTE.SCHED.1.MAN.ELEMENT.8" xlink:title="routeWaypointScheduleElement" />
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" />
+            <routeWaypointLeg xlink:href="#RTE.WPT.LEG.7" xlink:title="routeWaypointLegComposition" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_I43dO" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+                        <gml:pos>7.6109595 110.8081315</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.9">
+            <routeWaypointID>9</routeWaypointID>
+            <routeWaypointName>WP9</routeWaypointName>
+            <routeWaypointTurnRadius>15</routeWaypointTurnRadius>
+            <targetWaypoint xlink:href="#RTE.SCHED.1.MAN.ELEMENT.9" xlink:title="routeWaypointScheduleElement" />
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" />
+            <routeWaypointLeg xlink:href="#RTE.WPT.LEG.8" xlink:title="routeWaypointLegComposition" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_v1gcD" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+                        <gml:pos>6.069203 108.6691139</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypoint gml:id="RTE.WPT.10">
+            <routeWaypointID>10</routeWaypointID>
+            <routeWaypointName>WP10</routeWaypointName>
+            <routeWaypointTurnRadius>15</routeWaypointTurnRadius>
+            <targetWaypoint xlink:href="#RTE.SCHED.1.MAN.ELEMENT.10" xlink:title="routeWaypointScheduleElement" />
+            <routeWaypointCollection xlink:href="#RTE.WPTS" xlink:title="routeWaypointComposition" />
+            <routeWaypointLeg xlink:href="#RTE.WPT.LEG.9" xlink:title="routeWaypointLegComposition" />
+            <geometry>
+                <S100:pointProperty>
+                    <S100:Point gml:id="GEOMETRY_ID_oDwml" srsName="http://www.opengis.net/def/crs/EPSG/0/4326" srsDimension="2">
+                        <gml:pos>4.4938137 105.9733644</gml:pos>
+                    </S100:Point>
+                </S100:pointProperty>
+            </geometry>
+        </RouteWaypoint>
+        <RouteWaypointLeg gml:id="RTE.WPT.LEG.1">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:title="routeWaypointLegComposition" xlink:href="#RTE.WPT.2" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.LEG.2">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:title="routeWaypointLegComposition" xlink:href="#RTE.WPT.3" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.LEG.3">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:title="routeWaypointLegComposition" xlink:href="#RTE.WPT.4" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.LEG.4">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:title="routeWaypointLegComposition" xlink:href="#RTE.WPT.5" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.LEG.5">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:title="routeWaypointLegComposition" xlink:href="#RTE.WPT.6" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.LEG.6">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:title="routeWaypointLegComposition" xlink:href="#RTE.WPT.7" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.LEG.7">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:title="routeWaypointLegComposition" xlink:href="#RTE.WPT.8" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.LEG.8">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:title="routeWaypointLegComposition" xlink:href="#RTE.WPT.9" />
+        </RouteWaypointLeg>
+        <RouteWaypointLeg gml:id="RTE.WPT.LEG.9">
+            <routeWaypointLegGeometryType>loxodrome</routeWaypointLegGeometryType>
+            <routeWaypointLegCollection xlink:title="routeWaypointLegComposition" xlink:href="#RTE.WPT.10" />
+        </RouteWaypointLeg>
+        <RouteActionPoints gml:id="RTE.APTS">
+            <routeActionPointsCollection xlink:href="#RTE" xlink:title="routeActionPointsComposition" />
+            <routeActionPoint xlink:title="routeActionPointComposition" xlink:href="#RTE.APT.1" />
+        </RouteActionPoints>
+        <RouteActionPoint gml:id="RTE.APT.1">
+            <routeActionPointRequiredAction>Report</routeActionPointRequiredAction>
+			<!-- <routeActionPointRequiredAction>Recording</routeActionPointRequiredAction> -->
+            <routeActionPointRequiredActionDescription>Report to VTS</routeActionPointRequiredActionDescription>
+            <routeActionPointCollection xlink:href="#RTE.APTS" xlink:title="routeActionPointComposition" />
+        </RouteActionPoint>
+    </members>
+</Dataset>

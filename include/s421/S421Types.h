@@ -15,9 +15,11 @@
  *   - `fromString()` —— 文本 → 枚举（解析读 XML 时用，大小写/空格不敏感）
  */
 
+#include "S421Optional.h"
 #include <string>
 #include <cstdint>
 #include <cctype>
+#include <vector>
 
 namespace s421 {
 
@@ -68,8 +70,6 @@ enum class RouteInfoStatus : int {
     Errors            = 7,   ///< 错误（数据无效或解析失败）
     Incomplete        = 8,   ///< 不完整（航线数据缺失）
     RouteIssues       = 9,   ///< 航线问题（安全/合规性问题）
-    ServiceStarted    = 10,  ///< 服务开始（岸基开始监控此航线）
-    ServiceEnded      = 11   ///< 服务结束（岸基停止监控）
 };
 
 /**
@@ -88,8 +88,6 @@ inline const char* toString(RouteInfoStatus s) {
         case RouteInfoStatus::Errors:            return "Errors";
         case RouteInfoStatus::Incomplete:        return "Incomplete";
         case RouteInfoStatus::RouteIssues:       return "Route issues";
-        case RouteInfoStatus::ServiceStarted:    return "Service started";
-        case RouteInfoStatus::ServiceEnded:      return "Service ended";
     }
     return "Unknown";
 }
@@ -110,8 +108,6 @@ inline const char* toDescription(RouteInfoStatus s) {
         case RouteInfoStatus::Errors:            return "Errors(7)";
         case RouteInfoStatus::Incomplete:        return "Incomplete(8)";
         case RouteInfoStatus::RouteIssues:       return "RouteIssues(9)";
-        case RouteInfoStatus::ServiceStarted:    return "ServiceStarted(10)";
-        case RouteInfoStatus::ServiceEnded:      return "ServiceEnded(11)";
     }
     return "Unknown";
 }
@@ -138,8 +134,6 @@ inline bool fromString(const std::string& s, RouteInfoStatus& out) {
     if (n == "errors")             { out = RouteInfoStatus::Errors;            return true; }
     if (n == "incomplete")         { out = RouteInfoStatus::Incomplete;        return true; }
     if (n == "routeissues")        { out = RouteInfoStatus::RouteIssues;       return true; }
-    if (n == "servicestarted")     { out = RouteInfoStatus::ServiceStarted;    return true; }
-    if (n == "serviceended")       { out = RouteInfoStatus::ServiceEnded;      return true; }
     return false;
 }
 
@@ -203,10 +197,7 @@ enum class ActionType : int {
     UKCM          = 3,   ///< UKC 管理（Under Keel Clearance Management，富余水深管理）
     Note          = 4,   ///< 注意事项提示
     CriticalPoint = 5,   ///< 关键点
-    Reserved1     = 6,   ///< 6-9保留供未来使用
-    Reserved2     = 7,
-    Reserved3     = 8,
-    Reserved4     = 9
+    Others        = 6   ///< 6-9保留
 };
 
 /**
@@ -322,40 +313,40 @@ inline bool fromString(const std::string& s, TypeOfShip& out) {
 }
 
 /**
- * @struct Position
+ * @struct GM_Point
  * @brief WGS84 坐标（纬度 + 经度）。
  *
  * GML 标准中坐标顺序为 (纬度, 经度)，即 `(lat, lon)`。
  * - 纬度范围：-90（南极）到 +90（北极），赤道为 0。
  * - 经度范围：-180 到 +180，本初子午线为 0，东经为正。
  */
-struct Position {
+struct GM_Point {
     double lat = 0.0;   ///< 纬度（Latitude），范围：-90 ~ +90
     double lon = 0.0;   ///< 经度（Longitude），范围：-180 ~ +180
 
     /// 默认构造：原点 (0, 0)。
-    Position() = default;
+    GM_Point() = default;
 
     /**
      * @brief 以给定纬度、经度构造。
      * @param lat_ 纬度。
      * @param lon_ 经度。
      */
-    Position(double lat_, double lon_) : lat(lat_), lon(lon_) {}
+    GM_Point(double lat_, double lon_) : lat(lat_), lon(lon_) {}
 };
 
 /**
- * @struct RouteExtension
+ * @struct RouteExtensions
  * @brief 厂商扩展信息（XSD: `routeExtensionsType`）。
  *
  * S-421 标准允许设备厂商在标准数据之外添加自定义信息。
  * 这些扩展数据不影响标准的解析和校验流程。
  */
-struct RouteExtension {
+struct RouteExtensions {
     std::string manufacturerId;  ///< 厂商标识（如 `"ACME"`）
-    std::string name;            ///< 扩展名称
-    std::string version;         ///< 扩展版本号
-    std::string note;            ///< 扩展备注/内容
+    s421::optional<std::string> name;            ///< 扩展名称
+    s421::optional<std::string> version;         ///< 扩展版本号
+    s421::optional<std::string> content;            ///< 扩展备注/内容
 };
 
 } // namespace s421
