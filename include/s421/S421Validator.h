@@ -43,7 +43,7 @@ struct ValidationError {
      * @return 形如 `"❌ [错误] [attribute] RouteInfo.field: 描述"` 的字符串。
      */
     std::string toString() const {
-        std::string prefix = (level == Level::Error) ? "❌ [错误]" : "⚠️ [警告]";
+        std::string prefix = (level == Level::Error) ? "[Error]" : "[Warning]";
         return prefix + " [" + category + "] " + objectId + "." + field + ": " + message;
     }
 };
@@ -60,19 +60,18 @@ struct ValidationResult {
      * @brief 是否通过校验（无错误）。
      * @return `true` = 无错误（可能仍有警告）。
      */
-    bool ok() const { return errors.empty(); }
+    bool ok() const;
 
     /**
      * @brief 总错误数。
      * @return 错误条目数量。
      */
-    size_t errorCount() const { return errors.size(); }
-
+    size_t errorCount() const;
     /**
      * @brief 总警告数。
      * @return 警告条目数量。
      */
-    size_t warningCount() const { return warnings.size(); }
+    size_t warningCount() const;
 
     /**
      * @brief 将所有结果格式化输出到流。

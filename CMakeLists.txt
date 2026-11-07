@@ -103,16 +103,6 @@ else()
     target_compile_definitions(s421 PUBLIC S421_STATIC_DEFINE)
 endif()
 
-# S421-tool
-if(S421_BUILD_TOOL AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
-    add_executable(s421_tool src/main.cpp)
-    target_link_libraries(s421_tool PRIVATE s421)
-    target_compile_definitions(s421_tool PRIVATE pugi=s421_pugi)
-    if(MSVC)
-        target_compile_options(s421_tool PRIVATE /utf-8)
-    endif()
-endif()
-
 # S421-demo
 if(S421_BUILD_EXAMPLES)
     add_executable(s421_demo examples/demo.cpp)

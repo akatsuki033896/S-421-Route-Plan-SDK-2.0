@@ -16,6 +16,18 @@
 
 namespace s421 {
 
+bool ValidationResult::ok() const {
+    return errors.empty();
+}
+
+size_t ValidationResult::errorCount() const {
+    return errors.size();
+}
+
+size_t ValidationResult::warningCount() const {
+    return warnings.size();
+}
+
 // ============================================================
 //  ValidationResult::format
 // ============================================================
@@ -52,38 +64,45 @@ ValidationResult S421Validator::validate(const Dataset& dataset) {
     const Route& route = *dataset.route;
 
     // 第 2 层：属性校验（逐对象检查字段）
+    // 2.0 模型：info 为按值成员；waypoints/actionPoints/schedules 为
+    // unique_ptr<容器>（nullptr = 集合不存在），集合内为值向量
     checkRouteAttributes(route, result);
 
-    if (route.info) {
-        checkRouteInfoAttributes(*route.info, result);
-    }
+    checkRouteInfoAttributes(route.info, result);
 
-    for (const auto& wp : route.waypoints) {
-        if (wp) checkWaypointAttributes(*wp, result);
-    }
-
-    // 航段校验（通过航点的 leg）
-    for (const auto& wp : route.waypoints) {
-        if (wp && wp->leg) {
-            checkLegAttributes(*wp->leg, result);
+    if (route.waypoints) {
+        for (const auto& wp : route.waypoints->waypoints) {
+            checkWaypointAttributes(wp, result);
+            // 航段校验（通过航点的 leg）
+            if (wp.leg) {
+                checkLegAttributes(*wp.leg, result);
+            }
         }
     }
 
-    for (const auto& ap : route.actionPoints) {
-        if (ap) checkActionPointAttributes(*ap, result);
+    if (route.actionPoints) {
+        for (const auto& ap : route.actionPoints->actionPoints) {
+            checkActionPointAttributes(ap, result);
+        }
     }
 
-    for (const auto& sched : route.schedules) {
-        if (sched) {
-            checkScheduleAttributes(*sched, result);
-            for (const auto& elem : sched->manualElements) {
-                checkScheduleElementAttributes(elem, result);
+    if (route.schedules) {
+        for (const auto& sched : route.schedules->schedules) {
+            checkScheduleAttributes(sched, result);
+            if (sched.manual) {
+                for (const auto& elem : sched.manual->elements) {
+                    checkScheduleElementAttributes(elem, result);
+                }
             }
-            for (const auto& elem : sched->calculatedElements) {
-                checkScheduleElementAttributes(elem, result);
+            if (sched.calculated) {
+                for (const auto& elem : sched.calculated->elements) {
+                    checkScheduleElementAttributes(elem, result);
+                }
             }
-            for (const auto& elem : sched->recommendedElements) {
-                checkScheduleElementAttributes(elem, result);
+            if (sched.recommended) {
+                for (const auto& elem : sched.recommended->elements) {
+                    checkScheduleElementAttributes(elem, result);
+                }
             }
         }
     }
@@ -112,15 +131,18 @@ void S421Validator::checkStructure(const Dataset& dataset, ValidationResult& res
     }
 
     // Route 必须有 RouteInfo
-    if (!dataset.route->info) {
+    if (dataset.route->info.name.empty()) {
         addError(result, "format", "Route", "routeInfo",
                  "航线缺少 RouteInfo 对象，无法获取航线基本信息和状态");
     }
 
     // Route 若存在航点则必须有 ≥2 个（2.0 的 GMIN 等 minimal 文件可合法地无航点）
-    if (!dataset.route->waypoints.empty() && dataset.route->waypoints.size() < 2) {
+    // 2.0 模型：route.waypoints 为 unique_ptr<RouteWaypoints>，内含值向量
+    if (dataset.route->waypoints
+        && !dataset.route->waypoints->waypoints.empty()
+        && dataset.route->waypoints->waypoints.size() < 2) {
         addError(result, "format", "Route", "waypoints",
-                 "航点数量为 " + std::to_string(dataset.route->waypoints.size())
+                 "航点数量为 " + std::to_string(dataset.route->waypoints->waypoints.size())
                  + "，存在航点时至少需要 2 个");
     }
 }
@@ -178,20 +200,20 @@ void S421Validator::checkRouteInfoAttributes(const RouteInfo& info, ValidationRe
                  "状态枚举值非法");
     }
 
-    // routeInfoEditionTime（必填，UTC ISO 8601）
-    if (!info.editionTime.has_value() || isEmpty(info.editionTime.value())) {
+    // routeInfoEditionTime（必填，UTC ISO 8601；2.0 模型为按值 std::string，空串=未设置）
+    if (isEmpty(info.editionTime)) {
         addWarning(result, "attribute", objId, "routeInfoEditionTime",
                    "缺少编辑时间，建议使用 UTC ISO 8601 格式（如 2024-01-01T12:00:00Z）");
-    } else if (!isValidTimeFormat(info.editionTime.value())) {
+    } else if (!isValidTimeFormat(info.editionTime)) {
         addWarning(result, "attribute", objId, "routeInfoEditionTime",
                    "时间格式可能不规范，建议使用 UTC ISO 8601（如 2024-01-01T12:00:00Z）");
     }
 
-    // routeInfoVesselMMSI（2.0 可选；若提供则校验 9 位数字）
-    if (info.vesselMMSI.has_value()) {
-        if (!isValidMMSI(info.vesselMMSI.value())) {
+    // routeInfoVesselMMSI（2.0 可选；模型为按值 std::string，空串=未设置）
+    if (!isEmpty(info.vesselMMSI)) {
+        if (!isValidMMSI(info.vesselMMSI)) {
             addError(result, "attribute", objId, "routeInfoVesselMMSI",
-                     "MMSI 应为 9 位数字，当前值: '" + info.vesselMMSI.value() + "'");
+                     "MMSI 应为 9 位数字，当前值: '" + info.vesselMMSI + "'");
         }
     } else {
         addWarning(result, "attribute", objId, "routeInfoVesselMMSI",
@@ -224,12 +246,12 @@ void S421Validator::checkRouteInfoAttributes(const RouteInfo& info, ValidationRe
         }
     }
 
-    // 有效期校验（逻辑校验在这里做更方便）
-    if (info.validityStart.has_value() && info.validityEnd.has_value()) {
-        if (info.validityEnd.value() < info.validityStart.value()) {
+    // 有效期校验（逻辑校验在这里做更方便；2.0 模型为按值 std::string，空串=未设置）
+    if (!isEmpty(info.validityStart) && !isEmpty(info.validityEnd)) {
+        if (info.validityEnd < info.validityStart) {
             addError(result, "logic", objId, "validityStart/End",
-                     "有效期开始晚于结束: start=" + info.validityStart.value()
-                     + ", end=" + info.validityEnd.value());
+                     "有效期开始晚于结束: start=" + info.validityStart
+                     + ", end=" + info.validityEnd);
         }
     }
 
@@ -344,9 +366,12 @@ void S421Validator::checkScheduleAttributes(const RouteSchedule& sched, Validati
     }
 
     // 至少应该有某种调度元素
-    if (sched.manualElements.empty()
-        && sched.calculatedElements.empty()
-        && sched.recommendedElements.empty()) {
+    // 2.0 模型：manual/calculated/recommended 为 unique_ptr 子对象，各含 elements 向量
+    const bool hasAnyElement =
+        (sched.manual && !sched.manual->elements.empty())
+        || (sched.calculated && !sched.calculated->elements.empty())
+        || (sched.recommended && !sched.recommended->elements.empty());
+    if (!hasAnyElement) {
         addWarning(result, "attribute", objId, "elements",
                    "调度对象没有任何调度元素（人工/计算/推荐均为空）");
     }
@@ -362,18 +387,18 @@ void S421Validator::checkScheduleElementAttributes(const RouteScheduleElement& e
                  "关联航点 ID 必须为正整数");
     }
 
-    // 航速合理性
-    if (elem.planSOG.has_value() && elem.planSOG.value() < 0) {
+    // 航速合理性（2.0 模型：planSOG 为按值 double）
+    if (elem.planSOG < 0) {
         addError(result, "attribute", objId, "planSOG",
                  "计划航速不能为负数");
     }
 
-    // ETD ≤ ETA（逻辑校验）
-    if (elem.etd.has_value() && elem.eta.has_value()) {
-        if (elem.eta.value() < elem.etd.value()) {
+    // ETD ≤ ETA（逻辑校验；2.0 模型：etd/eta 为按值 std::string，空串=未设置）
+    if (!isEmpty(elem.etd) && !isEmpty(elem.eta)) {
+        if (elem.eta < elem.etd) {
             addWarning(result, "logic", objId, "ETD/ETA",
-                       "ETA 早于 ETD，请确认时间顺序: ETD=" + elem.etd.value()
-                       + ", ETA=" + elem.eta.value());
+                       "ETA 早于 ETD，请确认时间顺序: ETD=" + elem.etd
+                       + ", ETA=" + elem.eta);
         }
     }
 
@@ -392,80 +417,77 @@ void S421Validator::checkScheduleElementAttributes(const RouteScheduleElement& e
 //  第 3 层：逻辑校验
 // ============================================================
 void S421Validator::checkLogic(const Route& route, ValidationResult& result) {
+    // 2.0 模型：waypoints/actionPoints/schedules 为 unique_ptr<容器>，集合内为值向量
+    static const std::vector<RouteWaypoint> kNoWaypoints;
+    const std::vector<RouteWaypoint>& wps = route.waypoints ? route.waypoints->waypoints
+                                                            : kNoWaypoints;
+
     // 航点 ID 唯一性
     std::set<int> seenIds;
-    for (const auto& wp : route.waypoints) {
-        if (!wp) continue;
-        if (seenIds.count(wp->id)) {
-            addError(result, "logic", "Waypoint#" + std::to_string(wp->id),
+    for (const auto& wp : wps) {
+        if (seenIds.count(wp.id)) {
+            addError(result, "logic", "Waypoint#" + std::to_string(wp.id),
                      "routeWaypointID",
-                     "航点 ID 重复: " + std::to_string(wp->id) + "，每个航点必须有唯一 ID");
+                     "航点 ID 重复: " + std::to_string(wp.id) + "，每个航点必须有唯一 ID");
         }
-        seenIds.insert(wp->id);
+        seenIds.insert(wp.id);
     }
 
     // 航段连续性：有 N 个航点，最多 N-1 个航段（无航点时跳过，避免 size()-1 下溢误报）
-    if (!route.waypoints.empty()) {
+    if (!wps.empty()) {
         int legCount = 0;
-        for (const auto& wp : route.waypoints) {
-            if (wp && wp->leg) legCount++;
+        for (const auto& wp : wps) {
+            if (wp.leg) legCount++;
         }
-        if (legCount > static_cast<int>(route.waypoints.size()) - 1) {
+        if (legCount > static_cast<int>(wps.size()) - 1) {
             addError(result, "logic", "Route", "legs",
                      "航段数(" + std::to_string(legCount) + ")超过航点数-1("
-                     + std::to_string(route.waypoints.size() - 1) + ")");
+                     + std::to_string(wps.size() - 1) + ")");
         }
     }
 
     // 第一个航点通常不应该有 Leg（它是起点）
-    if (!route.waypoints.empty() && route.waypoints[0] && route.waypoints[0]->leg) {
+    if (!wps.empty() && wps.front().leg) {
         addWarning(result, "logic", "Waypoint#1", "leg",
                    "第一个航点关联了航段，通常起点不需要航段（航段从起点出发）");
     }
 
     // 调度元素中的 waypointId 应该引用存在的航点
     std::set<int> wpIds;
-    for (const auto& wp : route.waypoints) {
-        if (wp) wpIds.insert(wp->id);
+    for (const auto& wp : wps) {
+        wpIds.insert(wp.id);
     }
-    for (const auto& sched : route.schedules) {
-        if (!sched) continue;
-        for (const auto& elem : sched->manualElements) {
-            if (wpIds.count(elem.waypointId) == 0) {
-                addWarning(result, "logic",
-                           "ScheduleElement[WP#" + std::to_string(elem.waypointId) + "]",
-                           "routeWaypointId",
-                           "调度元素引用了不存在的航点 ID: " + std::to_string(elem.waypointId));
+    if (route.schedules) {
+        // 检查一类子调度的所有元素引用（elements 为空指针时跳过）
+        auto checkElements = [&](const std::vector<RouteScheduleElement>* elements) {
+            if (!elements) return;
+            for (const auto& elem : *elements) {
+                if (wpIds.count(elem.waypointId) == 0) {
+                    addWarning(result, "logic",
+                               "ScheduleElement[WP#" + std::to_string(elem.waypointId) + "]",
+                               "routeWaypointId",
+                               "调度元素引用了不存在的航点 ID: " + std::to_string(elem.waypointId));
+                }
             }
-        }
-        for (const auto& elem : sched->calculatedElements) {
-            if (wpIds.count(elem.waypointId) == 0) {
-                addWarning(result, "logic",
-                           "ScheduleElement[WP#" + std::to_string(elem.waypointId) + "]",
-                           "routeWaypointId",
-                           "调度元素引用了不存在的航点 ID: " + std::to_string(elem.waypointId));
-            }
-        }
-        for (const auto& elem : sched->recommendedElements) {
-            if (wpIds.count(elem.waypointId) == 0) {
-                addWarning(result, "logic",
-                           "ScheduleElement[WP#" + std::to_string(elem.waypointId) + "]",
-                           "routeWaypointId",
-                           "调度元素引用了不存在的航点 ID: " + std::to_string(elem.waypointId));
-            }
+        };
+        for (const auto& sched : route.schedules->schedules) {
+            checkElements(sched.manual ? &sched.manual->elements : nullptr);
+            checkElements(sched.calculated ? &sched.calculated->elements : nullptr);
+            checkElements(sched.recommended ? &sched.recommended->elements : nullptr);
         }
     }
 
     // 动作点 ID 唯一性
     std::set<int> seenApIds;
-    for (const auto& ap : route.actionPoints) {
-        if (!ap) continue;
-        if (seenApIds.count(ap->id)) {
-            addError(result, "logic", "ActionPoint#" + std::to_string(ap->id),
-                     "routeActionPointID",
-                     "动作点 ID 重复: " + std::to_string(ap->id));
+    if (route.actionPoints) {
+        for (const auto& ap : route.actionPoints->actionPoints) {
+            if (seenApIds.count(ap.id)) {
+                addError(result, "logic", "ActionPoint#" + std::to_string(ap.id),
+                         "routeActionPointID",
+                         "动作点 ID 重复: " + std::to_string(ap.id));
+            }
+            seenApIds.insert(ap.id);
         }
-        seenApIds.insert(ap->id);
     }
 
     // boundedBy 坐标合理性（lowerCorner 应在 upperCorner 的西南方）

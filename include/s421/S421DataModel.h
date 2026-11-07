@@ -211,7 +211,7 @@ public:
     s421::optional<std::string> name;                    ///< 动作点名称(可选)
     s421::optional<std::string> externalRef;             ///< 外部引用(可选)
     GM_Point geometry;                                   ///< 动作点的地理位置
-    double distance;                                     ///< 执行动作距离（海里）
+    double radius;                                       ///< 执行动作距离（海里）
     double timeToAct;                                    ///< 执行时间（秒，可选）
     ActionType requiredAction = ActionType::UserDefined; ///< 需要执行的动作类型
     std::string actionDescription;                       ///< 动作描述（如 `"通过报告线时联系 VTS"`）

@@ -1,0 +1,44 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 20, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build-${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "sdk",
+      "displayName": "s421 SDK（仅库）",
+      "description": "只构建 s421 库本身（lib / dll），不编译 demo",
+      "inherits": "base",
+      "cacheVariables": {
+        "S421_BUILD_EXAMPLES": "OFF"
+      }
+    },
+    {
+      "name": "demo",
+      "displayName": "s421 demo（库 + 调用示例）",
+      "description": "构建 s421 库并编译 examples/demo.cpp",
+      "inherits": "base",
+      "cacheVariables": {
+        "S421_BUILD_EXAMPLES": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "sdk",
+      "configurePreset": "sdk"
+    },
+    {
+      "name": "demo",
+      "configurePreset": "demo"
+    }
+  ]
+}

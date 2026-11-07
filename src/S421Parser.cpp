@@ -834,7 +834,7 @@ RouteActionPoint S421Parser::parseActionPoint(pugi::xml_node node) {
         ap.geometry = parsePointGeometry(geomNode);
     }
 
-    ap.distance = node.child("routeActionPointDistance").text().as_double();
+    ap.radius = node.child("routeActionPointRadius").text().as_double();
 
     {
         pugi::xml_node tta = node.child("routeActionPointTimetoAct");

@@ -54,71 +54,78 @@ FormatResult formatDataset(const Dataset& ds, std::ostream& os, bool verbose) {
            << " 版本=" << r.formatVersion
            << " 版本号=" << r.editionNo << "\n";
 
-        // 航线元数据
-        if (r.info) {
-            os << pad(4) << "元数据: 名称=" << r.info->name
-               << " 状态=" << toString(r.info->status);
-            if (r.info->author.has_value())
-                os << " 创建者=" << r.info->author.value();
-            if (r.info->vesselMMSI.has_value())
-                os << " MMSI=" << r.info->vesselMMSI.value();
-            if (r.info->typeOfShip.has_value())
-                os << " 船型=" << toString(*r.info->typeOfShip);
-            if (r.info->masterApproval.has_value())
-                os << " 船长批准=" << (r.info->masterApproval.value() ? "是" : "否");
-            os << "\n";
-        }
+        // 航线元数据（2.0 模型：Route::info 为按值成员，恒存在）
+        os << pad(4) << "元数据: 名称=" << r.info.name
+           << " 状态=" << toString(r.info.status);
+        if (!r.info.author.empty())
+            os << " 创建者=" << r.info.author;
+        if (!r.info.vesselMMSI.empty())
+            os << " MMSI=" << r.info.vesselMMSI;
+        if (r.info.vesselType.has_value())
+            os << " 船型=" << toString(*r.info.vesselType);
+        if (r.info.masterApproval.has_value())
+            os << " 船长批准=" << (r.info.masterApproval.value() ? "是" : "否");
+        os << "\n";
 
         // 航路点列表（紧凑格式）
-        for (const auto& wp : r.waypoints) {
-            if (!wp) continue;
-            os << pad(4) << "航路点#" << wp->id
-               << " (" << std::fixed << std::setprecision(6)
-               << wp->geometry.lat << ", " << wp->geometry.lon << ")";
-            if (wp->name.has_value())
-                os << " 名称=" << wp->name.value();
-            os << " 转向半径=" << std::fixed << std::setprecision(2) << wp->turnRadius << "海里";
-            if (wp->fixed.has_value())
-                os << (wp->fixed.value() ? " 固定" : " 可调");
-            os << "\n";
-
-            // 关联的航段信息
-            if (wp->leg && verbose) {
-                const auto& leg = *wp->leg;
-                os << pad(6) << "航段: " << toString(leg.geometryType);
-                if (leg.sogMax.has_value())
-                    os << " 最大航速=" << leg.sogMax.value() << "节";
-                if (leg.safetyDepth.has_value())
-                    os << " 安全水深=" << leg.safetyDepth.value() << "米";
+        if (r.waypoints) {
+            for (const auto& wp : r.waypoints->waypoints) {
+                os << pad(4) << "航路点#" << wp.id
+                   << " (" << std::fixed << std::setprecision(6)
+                   << wp.geometry.lat << ", " << wp.geometry.lon << ")";
+                if (!wp.name.empty())
+                    os << " 名称=" << wp.name;
+                os << " 转向半径=" << std::fixed << std::setprecision(2) << wp.turnRadius << "海里";
+                os << (wp.fixed ? " 固定" : " 可调");
                 os << "\n";
+
+                // 关联的航段信息
+                if (wp.leg && verbose) {
+                    const auto& leg = *wp.leg;
+                    os << pad(6) << "航段: " << toString(leg.geometryType);
+                    if (leg.sogMax.has_value())
+                        os << " 最大航速=" << leg.sogMax.value() << "节";
+                    if (leg.safetyDepth.has_value())
+                        os << " 安全水深=" << leg.safetyDepth.value() << "米";
+                    os << "\n";
+                }
             }
         }
 
         // 动作点列表
-        for (const auto& ap : r.actionPoints) {
-            if (!ap) continue;
-            os << pad(4) << "动作点#" << ap->id
-               << " 动作=" << toString(ap->requiredAction)
-               << " 描述=" << ap->actionDescription << "\n";
+        if (r.actionPoints) {
+            for (const auto& ap : r.actionPoints->actionPoints) {
+                os << pad(4) << "动作点#" << ap.id
+                   << " 动作=" << toString(ap.requiredAction)
+                   << " 描述=" << ap.actionDescription << "\n";
+            }
         }
 
         // 调度列表
-        for (const auto& sched : r.schedules) {
-            if (!sched) continue;
-            os << pad(4) << "调度#" << sched->id;
-            int total = sched->manualElements.size()
-                      + sched->calculatedElements.size()
-                      + sched->recommendedElements.size();
-            os << " 元素数=" << total << "\n";
+        // 2.0 模型：manual/calculated/recommended 为 unique_ptr 子对象，各含 elements 向量
+        if (r.schedules) {
+            for (const auto& sched : r.schedules->schedules) {
+                os << pad(4) << "调度#" << sched.id;
+                int total = (sched.manual ? static_cast<int>(sched.manual->elements.size()) : 0)
+                          + (sched.calculated ? static_cast<int>(sched.calculated->elements.size()) : 0)
+                          + (sched.recommended ? static_cast<int>(sched.recommended->elements.size()) : 0);
+                os << " 元素数=" << total << "\n";
+            }
         }
     }
 
     // ---- 统计计数（无论是否 verbose 都要计算）----
-    result.waypointCount = static_cast<int>(r.waypoints.size());
-    result.actionPointCount = static_cast<int>(r.actionPoints.size());
-    result.scheduleCount = static_cast<int>(r.schedules.size());
-    for (const auto& wp : r.waypoints) {
-        if (wp && wp->leg) result.legCount++;
+    if (r.waypoints) {
+        result.waypointCount = static_cast<int>(r.waypoints->waypoints.size());
+        for (const auto& wp : r.waypoints->waypoints) {
+            if (wp.leg) result.legCount++;
+        }
+    }
+    if (r.actionPoints) {
+        result.actionPointCount = static_cast<int>(r.actionPoints->actionPoints.size());
+    }
+    if (r.schedules) {
+        result.scheduleCount = static_cast<int>(r.schedules->schedules.size());
     }
 
     // ---- 简洁模式：只输出一行摘要 ----
@@ -139,10 +146,8 @@ std::string summarizeRoute(const Route& route) {
     std::ostringstream oss;
     oss << "航线=" << route.id
         << " 版本号=" << route.editionNo
-        << " 航路点数=" << route.waypoints.size();
-    if (route.info) {
-        oss << " 状态=" << toString(route.info->status);
-    }
+        << " 航路点数=" << (route.waypoints ? route.waypoints->waypoints.size() : 0)
+        << " 状态=" << toString(route.info.status);  // 2.0 模型：info 为按值成员
     return oss.str();
 }
 

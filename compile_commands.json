@@ -1,0 +1,140 @@
+[
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/c++ -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -std=c++14 -arch arm64 -fPIC -o CMakeFiles/s421.dir/src/S421Parser.cpp.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/S421Parser.cpp",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/S421Parser.cpp",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/src/S421Parser.cpp.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/c++ -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -std=c++14 -arch arm64 -fPIC -o CMakeFiles/s421.dir/src/S421Serializer.cpp.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/S421Serializer.cpp",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/S421Serializer.cpp",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/src/S421Serializer.cpp.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/c++ -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -std=c++14 -arch arm64 -fPIC -o CMakeFiles/s421.dir/src/S421Validator.cpp.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/S421Validator.cpp",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/S421Validator.cpp",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/src/S421Validator.cpp.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/c++ -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -std=c++14 -arch arm64 -fPIC -o CMakeFiles/s421.dir/src/S421Formatter.cpp.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/S421Formatter.cpp",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/S421Formatter.cpp",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/src/S421Formatter.cpp.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/c++ -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -std=c++14 -arch arm64 -fPIC -o CMakeFiles/s421.dir/src/MiniZip.cpp.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/MiniZip.cpp",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/MiniZip.cpp",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/src/MiniZip.cpp.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/c++ -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -std=c++14 -arch arm64 -fPIC -o CMakeFiles/s421.dir/src/MiniUnzip.cpp.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/MiniUnzip.cpp",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/src/MiniUnzip.cpp",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/src/MiniUnzip.cpp.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/c++ -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -std=c++14 -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/pugixml/pugixml.cpp.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml/pugixml.cpp",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml/pugixml.cpp",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/pugixml/pugixml.cpp.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/adler32.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/adler32.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/adler32.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/adler32.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/compress.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/compress.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/compress.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/compress.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/crc32.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/crc32.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/crc32.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/crc32.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/deflate.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/deflate.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/deflate.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/deflate.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/gzclose.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/gzclose.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/gzclose.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/gzclose.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/gzlib.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/gzlib.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/gzlib.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/gzlib.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/gzread.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/gzread.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/gzread.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/gzread.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/gzwrite.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/gzwrite.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/gzwrite.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/gzwrite.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/inflate.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/inflate.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/inflate.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/inflate.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/infback.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/infback.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/infback.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/infback.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/inftrees.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/inftrees.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/inftrees.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/inftrees.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/inffast.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/inffast.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/inffast.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/inffast.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/trees.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/trees.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/trees.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/trees.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/uncompr.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/uncompr.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/uncompr.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/uncompr.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/cc -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -DZ_PREFIX -Dpugi=s421_pugi -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/pugixml -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo -O3 -DNDEBUG -arch arm64 -fPIC -o CMakeFiles/s421.dir/third_party/zlib/zutil.c.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/zutil.c",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/third_party/zlib/zutil.c",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421.dir/third_party/zlib/zutil.c.o"
+},
+{
+  "directory": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo",
+  "command": "/usr/bin/c++ -DS421_LOG_LEVEL=4 -DS421_STATIC_DEFINE -I/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/include -O3 -DNDEBUG -std=c++14 -arch arm64 -fPIE -o CMakeFiles/s421_demo.dir/examples/demo.cpp.o -c /Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/examples/demo.cpp",
+  "file": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/examples/demo.cpp",
+  "output": "/Users/akatsuki/Documents/S-421-Route-Plan-SDK-2.0/build-demo/CMakeFiles/s421_demo.dir/examples/demo.cpp.o"
+}
+]

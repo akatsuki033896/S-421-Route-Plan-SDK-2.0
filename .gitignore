@@ -4,3 +4,7 @@ build instructions.txt
 .vs/
 .vscode/
 build/
+.cache/
+build-demo/
+build-sdk/
+.DS_Store

@@ -23,6 +23,40 @@ static const char* const kSrsNameWgs84 =
 S421Serializer::S421Serializer() = default;
 S421Serializer::~S421Serializer() = default;
 
+// ============================================================
+//  2.0 模型的"按值可选字段"输出辅助
+//
+//  Edition 2.0 数据模型把一部分"可选"字段改成了按值成员（std::string /
+//  double / bool），模型层面无法表达"未设置"。序列化约定：
+//    空字符串 / 0 值 / false  视为未设置，不输出该元素。
+//  这与解析端 getOpt 系列的行为镜像（元素缺失 → 解析为 0/false/空串），
+//  保证 解析→序列化 往返一致；这些字段在 XSD 中均为 minOccurs=0，省略合法。
+// ============================================================
+
+// 空字符串视为未设置，不输出
+static void writeTextIfNonEmpty(pugi::xml_node& parent, const char* name,
+                                const std::string& value) {
+    if (!value.empty()) {
+        parent.append_child(name).text().set(value.c_str());
+    }
+}
+
+// 0 值视为未设置，不输出（格式与 writeOptDouble 一致：1 位小数）
+static void writeDoubleIfNonZero(pugi::xml_node& parent, const char* name, double value) {
+    if (value != 0.0) {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(1) << value;
+        parent.append_child(name).text().set(oss.str().c_str());
+    }
+}
+
+// false 视为未设置，不输出
+static void writeBoolIfTrue(pugi::xml_node& parent, const char* name, bool value) {
+    if (value) {
+        parent.append_child(name).text().set("true");
+    }
+}
+
 void S421Serializer::setCoordinatePrecision(int digits) {
     coordPrecision_ = digits;
 }
@@ -69,57 +103,66 @@ S421Serializer::IdMap S421Serializer::buildIdMap(const Dataset& dataset) const {
     ids.schedsContainerId = "RTE.SCHEDS";
 
     if (!dataset.route) return ids;
+    const Route& route = *dataset.route;
 
-    // 航点 ID
-    for (const auto& wp : dataset.route->waypoints) {
-        if (wp) {
-            ids.waypointIds[wp->id] = "RTE.WPT." + std::to_string(wp->id);
+    // 航点 ID（2.0 模型：route.waypoints 为 unique_ptr<RouteWaypoints>，内含值向量）
+    if (route.waypoints) {
+        for (const auto& wp : route.waypoints->waypoints) {
+            ids.waypointIds[wp.id] = "RTE.WPT." + std::to_string(wp.id);
         }
     }
 
     // 航段 ID（顺序编号，跳过没有 leg 的航点）
     int legSeq = 1;
-    for (const auto& wp : dataset.route->waypoints) {
-        if (wp && wp->leg) {
-            ids.legIds[legSeq] = "RTE.WPT.LEG." + std::to_string(legSeq);
-            legSeq++;
+    if (route.waypoints) {
+        for (const auto& wp : route.waypoints->waypoints) {
+            if (wp.leg) {
+                ids.legIds[legSeq] = "RTE.WPT.LEG." + std::to_string(legSeq);
+                legSeq++;
+            }
         }
     }
 
     // 动作点 ID
-    for (const auto& ap : dataset.route->actionPoints) {
-        if (ap) {
-            ids.actionPointIds[ap->id] = "RTE.APT." + std::to_string(ap->id);
+    if (route.actionPoints) {
+        for (const auto& ap : route.actionPoints->actionPoints) {
+            ids.actionPointIds[ap.id] = "RTE.APT." + std::to_string(ap.id);
         }
     }
 
     // 调度 ID
-    for (const auto& sched : dataset.route->schedules) {
-        if (sched) {
-            int sid = sched->id;
+    if (route.schedules) {
+        for (const auto& sched : route.schedules->schedules) {
+            int sid = sched.id;
             ids.scheduleIds[sid] = "RTE.SCHED." + std::to_string(sid);
             ids.schedManualIds[sid] = "RTE.SCHED." + std::to_string(sid) + ".MAN";
             ids.schedCalcIds[sid]   = "RTE.SCHED." + std::to_string(sid) + ".CAL";
             ids.schedRecIds[sid]    = "RTE.SCHED." + std::to_string(sid) + ".REC";
 
-            // 调度元素 ID
+            // 调度元素 ID（2.0 模型：manual/calculated/recommended 三个 unique_ptr 子对象各含 elements）
             int elemSeq = 1;
-            for (const auto& e : sched->manualElements) {
-                std::string key = "MANUAL." + std::to_string(sid) + "." + std::to_string(elemSeq);
-                ids.elementIds[key] = "RTE.SCHED." + std::to_string(sid) + ".MAN.ELEMENT." + std::to_string(elemSeq);
-                elemSeq++;
+            if (sched.manual) {
+                for (const auto& e : sched.manual->elements) {
+                    std::string key = "MANUAL." + std::to_string(sid) + "." + std::to_string(elemSeq);
+                    ids.elementIds[key] = "RTE.SCHED." + std::to_string(sid) + ".MAN.ELEMENT." + std::to_string(elemSeq);
+                    elemSeq++;
+                }
             }
             elemSeq = 1;
-            for (const auto& e : sched->calculatedElements) {
-                std::string key = "CALC." + std::to_string(sid) + "." + std::to_string(elemSeq);
-                ids.elementIds[key] = "RTE.SCHED." + std::to_string(sid) + ".CAL.ELEMENT." + std::to_string(elemSeq);
-                elemSeq++;
+            if (sched.calculated) {
+                for (const auto& e : sched.calculated->elements) {
+                    std::string key = "CALC." + std::to_string(sid) + "." + std::to_string(elemSeq);
+                    ids.elementIds[key] = "RTE.SCHED." + std::to_string(sid) + ".CAL.ELEMENT." + std::to_string(elemSeq);
+                    elemSeq++;
+                }
             }
             elemSeq = 1;
-            for (const auto& e : sched->recommendedElements) {
-                std::string key = "REC." + std::to_string(sid) + "." + std::to_string(elemSeq);
-                ids.elementIds[key] = "RTE.SCHED." + std::to_string(sid) + ".REC.ELEMENT." + std::to_string(elemSeq);
-                elemSeq++;
+            if (sched.recommended) {
+                for (const auto& e : sched.recommended->elements) {
+                    std::string key = "REC." + std::to_string(sid) + "." + std::to_string(elemSeq);
+                    ids.elementIds[key] = "RTE.SCHED." + std::to_string(sid) + ".REC.ELEMENT." + std::to_string(elemSeq);
+                    elemSeq++;
+                }
             }
         }
     }
@@ -158,7 +201,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
         dii.append_child("S100:applicationProfile").text().set("S-421 GML");
         dii.append_child("S100:datasetFileIdentifier").text().set(dataset.gmlId.c_str());
         dii.append_child("S100:datasetTitle").text().set(
-            dataset.route->info ? dataset.route->info->name.c_str() : "S-421 Route");
+            dataset.route->info.name.empty() ? "S-421 Route" : dataset.route->info.name.c_str());
         dii.append_child("S100:datasetReferenceDate").text().set("2026-06-04");
         dii.append_child("S100:datasetLanguage").text().set("ENG");
         dii.append_child("S100:datasetTopicCategory").text().set("transportation");
@@ -169,25 +212,24 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
     // 3. 所有业务对象统一放在 <members> 下（2.0 取代旧版 member/imember 分装）
     pugi::xml_node members = root.append_child("members");
 
-    // 3a. RouteInfo
-    if (dataset.route->info) {
-        writeRouteInfo(members, *dataset.route->info, ids);
-    }
+    // 3a. RouteInfo（2.0 模型：Route::info 为按值成员，恒存在）
+    writeRouteInfo(members, dataset.route->info, ids);
 
     // 3b. Schedules（容器 + Schedule + Manual/Calc/Rec 容器 + Element）
-    if (!dataset.route->schedules.empty()) {
+    // 2.0 模型：route.schedules 为 unique_ptr<RouteSchedules>，内含值向量；
+    //           每个 RouteSchedule 通过 manual/calculated/recommended 三个 unique_ptr 持有子调度
+    if (dataset.route->schedules && !dataset.route->schedules->schedules.empty()) {
         writeSchedulesContainer(members, *dataset.route, ids);
 
-        for (const auto& sched : dataset.route->schedules) {
-            if (!sched) continue;
-            int sid = sched->id;
+        for (const auto& sched : dataset.route->schedules->schedules) {
+            int sid = sched.id;
             std::string schedGmlId = "RTE.SCHED." + std::to_string(sid);
 
             // RouteSchedule 自身
-            writeSchedule(members, *sched, ids);
+            writeSchedule(members, sched, ids);
 
             // Manual 容器 + 元素
-            if (!sched->manualElements.empty()) {
+            if (sched.manual && !sched.manual->elements.empty()) {
                 std::string manId = ids.schedManualIds.at(sid);
                 pugi::xml_node manNode = members.append_child("RouteScheduleManual");
                 manNode.append_attribute("gml:id") = manId.c_str();
@@ -196,7 +238,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                          "http://www.iho.int/gml/roles/routeScheduleCollection");
 
                 int elemSeq = 1;
-                for (const auto& elem : sched->manualElements) {
+                for (const auto& elem : sched.manual->elements) {
                     std::string key = "MANUAL." + std::to_string(sid) + "." + std::to_string(elemSeq);
                     std::string elemId = ids.elementIds.at(key);
                     writeRef(manNode, "routeScheduleElement", elemId,
@@ -205,7 +247,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                 }
 
                 elemSeq = 1;
-                for (const auto& elem : sched->manualElements) {
+                for (const auto& elem : sched.manual->elements) {
                     std::string key = "MANUAL." + std::to_string(sid) + "." + std::to_string(elemSeq);
                     std::string elemId = ids.elementIds.at(key);
                     writeScheduleElement(members, elem, elemId, manId,
@@ -215,7 +257,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
             }
 
             // Calculated 容器 + 元素
-            if (!sched->calculatedElements.empty()) {
+            if (sched.calculated && !sched.calculated->elements.empty()) {
                 std::string calId = ids.schedCalcIds.at(sid);
                 pugi::xml_node calNode = members.append_child("RouteScheduleCalculated");
                 calNode.append_attribute("gml:id") = calId.c_str();
@@ -224,7 +266,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                          "http://www.iho.int/gml/roles/routeScheduleCollection");
 
                 int elemSeq = 1;
-                for (const auto& elem : sched->calculatedElements) {
+                for (const auto& elem : sched.calculated->elements) {
                     std::string key = "CALC." + std::to_string(sid) + "." + std::to_string(elemSeq);
                     std::string elemId = ids.elementIds.at(key);
                     writeRef(calNode, "routeScheduleElement", elemId,
@@ -233,7 +275,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                 }
 
                 elemSeq = 1;
-                for (const auto& elem : sched->calculatedElements) {
+                for (const auto& elem : sched.calculated->elements) {
                     std::string key = "CALC." + std::to_string(sid) + "." + std::to_string(elemSeq);
                     std::string elemId = ids.elementIds.at(key);
                     writeScheduleElement(members, elem, elemId, calId,
@@ -243,7 +285,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
             }
 
             // Recommended 容器 + 元素
-            if (!sched->recommendedElements.empty()) {
+            if (sched.recommended && !sched.recommended->elements.empty()) {
                 std::string recId = ids.schedRecIds.at(sid);
                 pugi::xml_node recNode = members.append_child("RouteScheduleRecommended");
                 recNode.append_attribute("gml:id") = recId.c_str();
@@ -252,7 +294,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                          "http://www.iho.int/gml/roles/routeSchedule");
 
                 int elemSeq = 1;
-                for (const auto& elem : sched->recommendedElements) {
+                for (const auto& elem : sched.recommended->elements) {
                     std::string key = "REC." + std::to_string(sid) + "." + std::to_string(elemSeq);
                     std::string elemId = ids.elementIds.at(key);
                     writeRef(recNode, "routeScheduleElement", elemId,
@@ -261,7 +303,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                 }
 
                 elemSeq = 1;
-                for (const auto& elem : sched->recommendedElements) {
+                for (const auto& elem : sched.recommended->elements) {
                     std::string key = "REC." + std::to_string(sid) + "." + std::to_string(elemSeq);
                     std::string elemId = ids.elementIds.at(key);
                     writeScheduleElement(members, elem, elemId, recId,
@@ -276,46 +318,45 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
     writeRoute(members, *dataset.route, ids);
 
     // 3d. RouteWaypoints 容器 + 逐个 Waypoint + Leg
-    if (!dataset.route->waypoints.empty()) {
+    if (dataset.route->waypoints && !dataset.route->waypoints->waypoints.empty()) {
+        const std::vector<RouteWaypoint>& wps = dataset.route->waypoints->waypoints;
         writeWaypointsContainer(members, *dataset.route, ids);
 
         int runningLegSeq = 1;
-        for (size_t i = 0; i < dataset.route->waypoints.size(); i++) {
-            const auto& wp = dataset.route->waypoints[i];
-            if (!wp) continue;
+        for (size_t i = 0; i < wps.size(); i++) {
+            const RouteWaypoint& wp = wps[i];
 
             const RouteWaypoint* nextWp = nullptr;
-            if (i + 1 < dataset.route->waypoints.size()) {
-                nextWp = dataset.route->waypoints[i + 1].get();
+            if (i + 1 < wps.size()) {
+                nextWp = &wps[i + 1];
             }
 
-            writeWaypoint(members, *wp, nextWp, runningLegSeq, ids);
-            if (wp->leg) runningLegSeq++;
+            writeWaypoint(members, wp, nextWp, runningLegSeq, ids);
+            if (wp.leg) runningLegSeq++;
         }
 
         int legSeq = 1;
-        for (size_t i = 0; i < dataset.route->waypoints.size(); i++) {
-            const auto& wp = dataset.route->waypoints[i];
-            if (!wp || !wp->leg) continue;
+        for (size_t i = 0; i < wps.size(); i++) {
+            const RouteWaypoint& wp = wps[i];
+            if (!wp.leg) continue;
 
-            const GM_Point startPos = wp->geometry;
+            const GM_Point startPos = wp.geometry;
             // 终点 = 下一个航点的坐标。末尾航点没有"下一个"时保持空
             s421::optional<GM_Point> endPos;
-            if (i + 1 < dataset.route->waypoints.size() && dataset.route->waypoints[i + 1]) {
-                endPos = dataset.route->waypoints[i + 1]->geometry;
+            if (i + 1 < wps.size()) {
+                endPos = wps[i + 1].geometry;
             }
 
-            writeLeg(members, *wp->leg, startPos, endPos, legSeq, ids);
+            writeLeg(members, *wp.leg, startPos, endPos, legSeq, ids);
             legSeq++;
         }
     }
 
     // 3e. ActionPoints 容器 + 逐个 ActionPoint
-    if (!dataset.route->actionPoints.empty()) {
+    if (dataset.route->actionPoints && !dataset.route->actionPoints->actionPoints.empty()) {
         writeActionPointsContainer(members, *dataset.route, ids);
-        for (const auto& ap : dataset.route->actionPoints) {
-            if (!ap) continue;
-            writeActionPoint(members, *ap, ids);
+        for (const auto& ap : dataset.route->actionPoints->actionPoints) {
+            writeActionPoint(members, ap, ids);
         }
     }
 
@@ -370,13 +411,10 @@ void S421Serializer::writeRoute(pugi::xml_node& parent, const Route& route, cons
     //   → routeSchedules → routeWaypoints → routeActionPoints
 
     // Route 级别的扩展（XSD 顺序：紧跟 routeEditionNo 之后）
-    if (!route.extensions.empty()) {
-        int seq = 1;
-        for (const auto& ext : route.extensions) {
-            std::string extId = ids.routeId + ".EXT." + std::to_string(seq);
-            writeExtensions(routeNode, "routeExtensions", {ext}, extId);
-            seq++;
-        }
+    // 2.0 模型：Route::extensions 为单数 optional<RouteExtensions>
+    if (route.extensions.has_value()) {
+        std::string extId = ids.routeId + ".EXT.1";
+        writeExtensions(routeNode, "routeExtensions", {*route.extensions}, extId);
     }
 
     // 引用（指向容器对象）
@@ -384,17 +422,17 @@ void S421Serializer::writeRoute(pugi::xml_node& parent, const Route& route, cons
              "http://www.iho.int/gml/roles/routeInfo");
 
     // routeSchedules 必须写在 routeWaypoints 之前
-    if (!route.schedules.empty()) {
+    if (route.schedules && !route.schedules->schedules.empty()) {
         writeRef(routeNode, "routeSchedules", ids.schedsContainerId,
                  "http://www.iho.int/gml/roles/routeSchedules");
     }
-    // 注意：必须与 writeWaypointsContainer（buildDocument 中受 waypoints.empty() 保护）的条件保持一致。否则空数据集会产出一条引用 '#RTE.WPTS' 的悬空引用
-    if (!route.waypoints.empty()) {
+    // 注意：必须与 writeWaypointsContainer（buildDocument 中受 waypoints 空保护）的条件保持一致。否则空数据集会产出一条引用 '#RTE.WPTS' 的悬空引用
+    if (route.waypoints && !route.waypoints->waypoints.empty()) {
         writeRef(routeNode, "routeWaypoints", ids.wptsContainerId,
                  "http://www.iho.int/gml/roles/routeWaypoints");
     }
 
-    if (!route.actionPoints.empty()) {
+    if (route.actionPoints && !route.actionPoints->actionPoints.empty()) {
         writeRef(routeNode, "routeActionPoints", ids.aptsContainerId,
                  "http://www.iho.int/gml/roles/routeActionPoints");
     }
@@ -412,18 +450,18 @@ void S421Serializer::writeRouteInfo(pugi::xml_node& parent, const RouteInfo& inf
 
     infoNode.append_child("routeInfoName").text().set(info.name.c_str());
 
-    // 可选字段
-    writeOptText(infoNode, "routeInfoAuthor", info.author);
-    writeOptText(infoNode, "routeInfoEditionTime", info.editionTime);
-    writeOptText(infoNode, "routeInfoDescription", info.description);
+    // 可选字段（2.0 模型改为按值 std::string：空串视为未设置，不输出）
+    writeTextIfNonEmpty(infoNode, "routeInfoAuthor", info.author);
+    writeTextIfNonEmpty(infoNode, "routeInfoEditionTime", info.editionTime);
+    writeTextIfNonEmpty(infoNode, "routeInfoDescription", info.description);
 
     // 2.0：status 输出文本（如 "Planned"）——XSD 顺序在 Description 之后
     infoNode.append_child("routeInfoStatus").text().set(toString(info.status));
 
     writeOptBool(infoNode, "routeInfoMasterApproval", info.masterApproval);
 
-    writeOptText(infoNode, "routeInfoValidityStart", info.validityStart);
-    writeOptText(infoNode, "routeInfoValidityEnd", info.validityEnd);
+    writeTextIfNonEmpty(infoNode, "routeInfoValidityStart", info.validityStart);
+    writeTextIfNonEmpty(infoNode, "routeInfoValidityEnd", info.validityEnd);
 
     // 港口
     writeOptText(infoNode, "routeInfoDeparturePortID1", info.departurePortID1);
@@ -437,12 +475,12 @@ void S421Serializer::writeRouteInfo(pugi::xml_node& parent, const RouteInfo& inf
     writeOptText(infoNode, "routeInfoReferencePrevRoute", info.referencePrevRoute);
     writeOptText(infoNode, "routeInfoReferenceNextRoute", info.referenceNextRoute);
 
-    // 船舶（2.0：typeOfShip 文本枚举，取代旧 routeInfoVesselType）
-    if (info.typeOfShip.has_value()) {
-        infoNode.append_child("typeOfShip").text().set(toString(*info.typeOfShip));
+    // 船舶（2.0：typeOfShip 文本枚举，取代旧 routeInfoVesselType；模型字段名 vesselType）
+    if (info.vesselType.has_value()) {
+        infoNode.append_child("typeOfShip").text().set(toString(*info.vesselType));
     }
     writeOptText(infoNode, "routeInfoVesselName", info.vesselName);
-    writeOptText(infoNode, "routeInfoVesselMMSI", info.vesselMMSI);
+    writeTextIfNonEmpty(infoNode, "routeInfoVesselMMSI", info.vesselMMSI);
     writeOptText(infoNode, "routeInfoVesselCallsign", info.vesselCallsign);
     writeOptText(infoNode, "routeInfoVesselIMO", info.vesselIMO);
     writeOptText(infoNode, "routeInfoVesselVoyage", info.vesselVoyage);
@@ -456,15 +494,11 @@ void S421Serializer::writeRouteInfo(pugi::xml_node& parent, const RouteInfo& inf
     writeOptDouble(infoNode, "routeInfoBeamMax", info.beamMax);
     writeOptDouble(infoNode, "routeInfoLengthMax", info.lengthMax);
 
-    // 扩展
-    if (!info.extensions.empty()) {
+    // 扩展（2.0 模型：单数 optional<RouteExtensions>）
+    if (info.extensions.has_value()) {
         pugi::xml_node extWrapper = infoNode.append_child("routeInfoExtensions");
-        int seq = 1;
-        for (const auto& ext : info.extensions) {
-            std::string extId = ids.infoId + ".EXT." + std::to_string(seq);
-            writeExtensions(extWrapper, "routeExtensions", {ext}, extId);
-            seq++;
-        }
+        std::string extId = ids.infoId + ".EXT.1";
+        writeExtensions(extWrapper, "routeExtensions", {*info.extensions}, extId);
     }
 }
 
@@ -477,19 +511,15 @@ void S421Serializer::writeWaypointsContainer(pugi::xml_node& parent,
     writeRef(container, "routeWaypointsCollection", ids.routeId,
              "http://www.iho.int/gml/roles/routeWaypointsCollection");
 
-    // 引用每个航点
-    for (const auto& wp : route.waypoints) {
-        if (!wp) continue;
-        auto it = ids.waypointIds.find(wp->id);
-        if (it != ids.waypointIds.end()) {
-            writeRef(container, "routeWaypoint", it->second,
-                     "http://www.iho.int/gml/roles/consistsOfRouteWaypoint");
+    // 引用每个航点（2.0 模型：route.waypoints 为 unique_ptr<RouteWaypoints>）
+    if (route.waypoints) {
+        for (const auto& wp : route.waypoints->waypoints) {
+            auto it = ids.waypointIds.find(wp.id);
+            if (it != ids.waypointIds.end()) {
+                writeRef(container, "routeWaypoint", it->second,
+                         "http://www.iho.int/gml/roles/consistsOfRouteWaypoint");
+            }
         }
-    }
-
-    // 容器扩展
-    if (!route.waypoints.empty() && !route.extensions.empty()) {
-        // Waypoints 容器没有单独的扩展列表，跳过
     }
 }
 
@@ -509,31 +539,23 @@ void S421Serializer::writeWaypoint(pugi::xml_node& parent, const RouteWaypoint& 
     // 必填字段
     wpNode.append_child("routeWaypointID").text().set(wp.id);
 
-    // 可选字段
-    writeOptText(wpNode, "routeWaypointName", wp.name);
+    // 可选字段（2.0 模型：name 为按值 std::string、fixed 为按值 bool，空值视为未设置）
+    writeTextIfNonEmpty(wpNode, "routeWaypointName", wp.name);
     writeOptText(wpNode, "routeWaypointExternalReferenceID", wp.externalRefID);
-    writeOptBool(wpNode, "routeWaypointFixed", wp.fixed);
+    writeBoolIfTrue(wpNode, "routeWaypointFixed", wp.fixed);
 
     wpNode.append_child("routeWaypointTurnRadius").text().set(
         std::to_string(wp.turnRadius).c_str());
 
-    // 扩展（XSD 顺序：TurnRadius 之后、targetWaypoint 之前）
-    if (!wp.extensions.empty()) {
+    // 扩展（XSD 顺序：TurnRadius 之后、targetWaypoint 之前；2.0 模型为单数 optional）
+    if (wp.extensions.has_value()) {
         pugi::xml_node extWrapper = wpNode.append_child("routeWaypointExtensions");
-        int seq = 1;
-        for (const auto& ext : wp.extensions) {
-            std::string extId = wpGmlId + ".EXT." + std::to_string(seq);
-            writeExtensions(extWrapper, "routeExtensions", {ext}, extId);
-            seq++;
-        }
+        std::string extId = wpGmlId + ".EXT.1";
+        writeExtensions(extWrapper, "routeExtensions", {*wp.extensions}, extId);
     }
 
-    // targetWaypoint 引用（2.0 新增：航点 → 调度元素）
-    if (wp.targetWaypointRef.has_value()) {
-        pugi::xml_node tw = wpNode.append_child("targetWaypoint");
-        tw.append_attribute("xlink:href") = wp.targetWaypointRef.value().c_str();
-        tw.append_attribute("xlink:title") = "routeWaypointScheduleElement";
-    }
+    // （2.0 模型：航点不再持有 targetWaypoint 引用——航点与调度元素的关联
+    //   由 RouteScheduleElement::waypointId 表达，见 S421DataModel.h）
 
     // 反向引用到容器
     writeRef(wpNode, "routeWaypointCollection", ids.wptsContainerId,
@@ -594,15 +616,11 @@ void S421Serializer::writeLeg(pugi::xml_node& parent, const RouteWaypointLeg& le
     writeOptDouble(legNode, "routeWaypointLegSTWMax", leg.stwMax);
     writeOptDouble(legNode, "routeWaypointLegSTWMin", leg.stwMin);
 
-    // 扩展（XSD 顺序：extensions 在 collection 之前）
-    if (!leg.extensions.empty()) {
+    // 扩展（XSD 顺序：extensions 在 collection 之前；2.0 模型为单数 optional）
+    if (leg.extensions.has_value()) {
         pugi::xml_node extWrapper = legNode.append_child("routeWaypointLegExtensions");
-        int seq = 1;
-        for (const auto& ext : leg.extensions) {
-            std::string extId = legGmlId + ".EXT." + std::to_string(seq);
-            writeExtensions(extWrapper, "routeExtensions", {ext}, extId);
-            seq++;
-        }
+        std::string extId = legGmlId + ".EXT.1";
+        writeExtensions(extWrapper, "routeExtensions", {*leg.extensions}, extId);
     }
 
     // 反向引用：指向关联的 Waypoint
@@ -626,13 +644,14 @@ void S421Serializer::writeActionPointsContainer(pugi::xml_node& parent,
     writeRef(container, "routeActionPointsCollection", ids.routeId,
              "http://www.iho.int/gml/roles/routeActionPointsCollection");
 
-    // 引用每个动作点
-    for (const auto& ap : route.actionPoints) {
-        if (!ap) continue;
-        auto it = ids.actionPointIds.find(ap->id);
-        if (it != ids.actionPointIds.end()) {
-            writeRef(container, "routeActionPoint", it->second,
-                     "http://www.iho.int/gml/roles/routeActionPoint");
+    // 引用每个动作点（2.0 模型：route.actionPoints 为 unique_ptr<RouteActionPoints>）
+    if (route.actionPoints) {
+        for (const auto& ap : route.actionPoints->actionPoints) {
+            auto it = ids.actionPointIds.find(ap.id);
+            if (it != ids.actionPointIds.end()) {
+                writeRef(container, "routeActionPoint", it->second,
+                         "http://www.iho.int/gml/roles/routeActionPoint");
+            }
         }
     }
 }
@@ -656,24 +675,22 @@ void S421Serializer::writeActionPoint(pugi::xml_node& parent,
     // 可选
     writeOptText(apNode, "routeActionPointName", ap.name);
     writeOptText(apNode, "routeActionPointExternalReference", ap.externalRef);
-    writeOptDouble(apNode, "routeActionPointRadius", ap.radius);
-    // 注意：schema 中该元素名是小写 t 的 TimetoAct
-    writeOptDouble(apNode, "routeActionPointTimetoAct", ap.timeToAct);
+    // 2.0 模型：radius/timeToAct 为按值 double（0 视为未设置）。
+    // 模型字段 radius 对应 XSD 元素 routeActionPointRadius；
+    // XSD 元素名是小写 t 的 TimetoAct
+    writeDoubleIfNonZero(apNode, "routeActionPointRadius", ap.radius);
+    writeDoubleIfNonZero(apNode, "routeActionPointTimetoAct", ap.timeToAct);
 
     // 2.0：requiredAction 输出文本（如 "Report"）
     apNode.append_child("routeActionPointRequiredAction").text().set(toString(ap.requiredAction));
     apNode.append_child("routeActionPointRequiredActionDescription").text().set(
         ap.actionDescription.c_str());
 
-    // 扩展
-    if (!ap.extensions.empty()) {
+    // 扩展（2.0 模型：单数 optional<RouteExtensions>）
+    if (ap.extensions.has_value()) {
         pugi::xml_node extWrapper = apNode.append_child("routeActionPointExtensions");
-        int seq = 1;
-        for (const auto& ext : ap.extensions) {
-            std::string extId = apGmlId + ".EXT." + std::to_string(seq);
-            writeExtensions(extWrapper, "routeExtensions", {ext}, extId);
-            seq++;
-        }
+        std::string extId = apGmlId + ".EXT.1";
+        writeExtensions(extWrapper, "routeExtensions", {*ap.extensions}, extId);
     }
 
     // 反向引用
@@ -691,13 +708,14 @@ void S421Serializer::writeSchedulesContainer(pugi::xml_node& parent,
     pugi::xml_node container = parent.append_child("RouteSchedules");
     container.append_attribute("gml:id") = ids.schedsContainerId.c_str();
 
-    // 引用每个调度
-    for (const auto& sched : route.schedules) {
-        if (!sched) continue;
-        auto it = ids.scheduleIds.find(sched->id);
-        if (it != ids.scheduleIds.end()) {
-            writeRef(container, "routeSchedule", it->second,
-                     "http://www.iho.int/gml/roles/routeSchedule");
+    // 引用每个调度（2.0 模型：route.schedules 为 unique_ptr<RouteSchedules>）
+    if (route.schedules) {
+        for (const auto& sched : route.schedules->schedules) {
+            auto it = ids.scheduleIds.find(sched.id);
+            if (it != ids.scheduleIds.end()) {
+                writeRef(container, "routeSchedule", it->second,
+                         "http://www.iho.int/gml/roles/routeSchedule");
+            }
         }
     }
 }
@@ -719,28 +737,27 @@ void S421Serializer::writeSchedule(pugi::xml_node& parent, const RouteSchedule& 
              "http://www.iho.int/gml/roles/routeScheduleCollection");
 
     // 引用 Manual/Calculated/Recommended
+    // 2.0 模型：sched.manual/calculated/recommended 为 unique_ptr，内含 elements 向量
     auto manIt = ids.schedManualIds.find(sid);
-    if (manIt != ids.schedManualIds.end() && !sched.manualElements.empty()) {
+    if (manIt != ids.schedManualIds.end()
+        && sched.manual && !sched.manual->elements.empty()) {
         writeRef(schedNode, "routeScheduleManual", manIt->second,
                  "http://www.iho.int/gml/roles/routeScheduleManual");
     }
     auto calIt = ids.schedCalcIds.find(sid);
-    if (calIt != ids.schedCalcIds.end() && !sched.calculatedElements.empty()) {
+    if (calIt != ids.schedCalcIds.end()
+        && sched.calculated && !sched.calculated->elements.empty()) {
         writeRef(schedNode, "routeScheduleCalculated", calIt->second,
                  "http://www.iho.int/gml/roles/routeScheduleCalculated");
     }
     auto recIt = ids.schedRecIds.find(sid);
-    if (recIt != ids.schedRecIds.end() && !sched.recommendedElements.empty()) {
+    if (recIt != ids.schedRecIds.end()
+        && sched.recommended && !sched.recommended->elements.empty()) {
         writeRef(schedNode, "routeScheduleRecommended", recIt->second,
                  "http://www.iho.int/gml/roles/routeScheduleRecommended");
     }
 
-    // 写入 Manual 容器 + 元素
-    if (!sched.manualElements.empty()) {
-        std::string manId = ids.schedManualIds.at(sid);
-    }
-
-    // Manual/Calc/Rec 容器和元素在 buildDocument 中通过单独的 imember 写入
+    // Manual/Calc/Rec 容器和元素在 buildDocument 中通过单独的 member 写入
 }
 
 void S421Serializer::writeScheduleElement(pugi::xml_node& parent,
@@ -754,9 +771,10 @@ void S421Serializer::writeScheduleElement(pugi::xml_node& parent,
 
     elemNode.append_child("routeWaypointID").text().set(elem.waypointId);
 
-    writeOptDouble(elemNode, "routeScheduleElementPlanSOG", elem.planSOG);
-    writeOptText(elemNode, "routeScheduleElementETD", elem.etd);
-    writeOptText(elemNode, "routeScheduleElementETA", elem.eta);
+    // 2.0 模型：planSOG/etd/eta 为按值成员（0/空串视为未设置）
+    writeDoubleIfNonZero(elemNode, "routeScheduleElementPlanSOG", elem.planSOG);
+    writeTextIfNonEmpty(elemNode, "routeScheduleElementETD", elem.etd);
+    writeTextIfNonEmpty(elemNode, "routeScheduleElementETA", elem.eta);
     writeOptInt(elemNode, "routeScheduleElementETDWindowBefore", elem.etdWindowBefore);
     writeOptInt(elemNode, "routeScheduleElementETDWindowAfter", elem.etdWindowAfter);
     writeOptInt(elemNode, "routeScheduleElementETAWindowBefore", elem.etaWindowBefore);
@@ -795,9 +813,9 @@ void S421Serializer::writeCurveGeometry(pugi::xml_node& parent,
     ls.append_child("gml:posList").text().set(posList.c_str());
 }
 
-// 厂商扩展
+// 厂商扩展（2.0 模型：RouteExtensions 的 name/version/content 为 optional<std::string>）
 void S421Serializer::writeExtensions(pugi::xml_node& parent, const char* wrapperName,
-                                      const std::vector<RouteExtension>& extensions,
+                                      const std::vector<RouteExtensions>& extensions,
                                       const std::string& baseId) {
     int seq = 1;
     for (const auto& ext : extensions) {
@@ -809,16 +827,16 @@ void S421Serializer::writeExtensions(pugi::xml_node& parent, const char* wrapper
         extNode.append_attribute("gml:id") = extId.c_str();
         extNode.append_attribute("routeExtensionsManufacturerId") = ext.manufacturerId.c_str();
 
-        if (!ext.name.empty()) {
-            extNode.append_attribute("routeExtensionsName") = ext.name.c_str();
+        if (ext.name.has_value()) {
+            extNode.append_attribute("routeExtensionsName") = ext.name.value().c_str();
         }
-        if (!ext.version.empty()) {
-            extNode.append_attribute("routeExtensionsVersion") = ext.version.c_str();
+        if (ext.version.has_value()) {
+            extNode.append_attribute("routeExtensionsVersion") = ext.version.value().c_str();
         }
 
-        // Note（可以有多个，用换行分割后再合并简化处理）
-        if (!ext.note.empty()) {
-            extNode.append_child("routeExtensionsNote").text().set(ext.note.c_str());
+        // Note（解析端把多个 note 合并进 content，此处原样写回）
+        if (ext.content.has_value()) {
+            extNode.append_child("routeExtensionsNote").text().set(ext.content.value().c_str());
         }
         seq++;
     }
@@ -836,40 +854,40 @@ static const char* xlinkTitleFor(const char* parentName, const char* childName) 
     struct Entry { const char* parent; const char* child; const char* title; };
     static const Entry kTable[] = {
         // ---- Route 顶层引用 ----
-        {"Route",                "routeInfo",                          "routeInfoComGM_Point"},
-        {"Route",                "routeSchedules",                     "routeSchedulesComGM_Point"},
-        {"Route",                "routeWaypoints",                     "routeWaypointsComGM_Point"},
-        {"Route",                "routeActionPoints",                  "routeActionPointsComGM_Point"},
+        {"Route",                "routeInfo",                          "routeInfoComposition"},
+        {"Route",                "routeSchedules",                     "routeSchedulesComposition"},
+        {"Route",                "routeWaypoints",                     "routeWaypointsComposition"},
+        {"Route",                "routeActionPoints",                  "routeActionPointsComposition"},
         // ---- RouteWaypoints 容器 ----
-        {"RouteWaypoints",       "routeWaypointsCollection",           "routeWaypointsComGM_Point"},
-        {"RouteWaypoints",       "routeWaypoint",                      "routeWaypointComGM_Point"},
+        {"RouteWaypoints",       "routeWaypointsCollection",           "routeWaypointsComposition"},
+        {"RouteWaypoints",       "routeWaypoint",                      "routeWaypointComposition"},
         // ---- RouteWaypoint 自身 ----
-        {"RouteWaypoint",        "routeWaypointCollection",            "routeWaypointComGM_Point"},
-        {"RouteWaypoint",        "routeWaypointLeg",                   "routeWaypointLegComGM_Point"},
+        {"RouteWaypoint",        "routeWaypointCollection",            "routeWaypointComposition"},
+        {"RouteWaypoint",        "routeWaypointLeg",                   "routeWaypointLegComposition"},
         {"RouteWaypoint",        "targetWaypoint",                     "routeWaypointScheduleElement"},
         // ---- RouteWaypointLeg ----
-        {"RouteWaypointLeg",     "routeWaypointLegCollection",         "routeWaypointLegComGM_Point"},
+        {"RouteWaypointLeg",     "routeWaypointLegCollection",         "routeWaypointLegComposition"},
         // ---- RouteSchedules 容器 / RouteSchedule ----
-        {"RouteSchedules",       "routeSchedule",                      "routeScheduleComGM_Point"},
-        {"RouteSchedule",        "routeScheduleCollection",            "routeScheduleComGM_Point"},
-        {"RouteSchedule",        "routeScheduleManual",                "routeScheduleManualComGM_Point"},
-        {"RouteSchedule",        "routeScheduleCalculated",            "routeScheduleCalculatedComGM_Point"},
-        {"RouteSchedule",        "routeScheduleRecommended",           "routeScheduleRecommendedComGM_Point"},
+        {"RouteSchedules",       "routeSchedule",                      "routeScheduleComposition"},
+        {"RouteSchedule",        "routeScheduleCollection",            "routeScheduleComposition"},
+        {"RouteSchedule",        "routeScheduleManual",                "routeScheduleManualComposition"},
+        {"RouteSchedule",        "routeScheduleCalculated",            "routeScheduleCalculatedComposition"},
+        {"RouteSchedule",        "routeScheduleRecommended",           "routeScheduleRecommendedComposition"},
         // ---- Manual / Calculated / Recommended 容器 ----
-        {"RouteScheduleManual",       "routeScheduleCollection",              "routeScheduleManualComGM_Point"},
-        {"RouteScheduleManual",       "routeScheduleElement",                 "routeScheduleElementManualComGM_Point"},
-        {"RouteScheduleCalculated",   "routeScheduleCollection",              "routeScheduleCalculatedComGM_Point"},
-        {"RouteScheduleCalculated",   "routeScheduleElement",                 "routeScheduleElementCalculatedComGM_Point"},
-        {"RouteScheduleRecommended",  "routeScheduleCollection",              "routeScheduleRecommendedComGM_Point"},
-        {"RouteScheduleRecommended",  "routeScheduleElement",                 "routeScheduleElementRecommendedComGM_Point"},
+        {"RouteScheduleManual",       "routeScheduleCollection",              "routeScheduleManualComposition"},
+        {"RouteScheduleManual",       "routeScheduleElement",                 "routeScheduleElementManualComposition"},
+        {"RouteScheduleCalculated",   "routeScheduleCollection",              "routeScheduleCalculatedComposition"},
+        {"RouteScheduleCalculated",   "routeScheduleElement",                 "routeScheduleElementCalculatedComposition"},
+        {"RouteScheduleRecommended",  "routeScheduleCollection",              "routeScheduleRecommendedComposition"},
+        {"RouteScheduleRecommended",  "routeScheduleElement",                 "routeScheduleElementRecommendedComposition"},
         // ---- ScheduleElement 回指各自的集合 ----
-        {"RouteScheduleElement", "routeScheduleElementManualCollection",      "routeScheduleElementManualComGM_Point"},
-        {"RouteScheduleElement", "routeScheduleElementCalculatedCollection",  "routeScheduleElementCalculatedComGM_Point"},
-        {"RouteScheduleElement", "routeScheduleElementRecommendedCollection", "routeScheduleElementRecommendedComGM_Point"},
+        {"RouteScheduleElement", "routeScheduleElementManualCollection",      "routeScheduleElementManualComposition"},
+        {"RouteScheduleElement", "routeScheduleElementCalculatedCollection",  "routeScheduleElementCalculatedComposition"},
+        {"RouteScheduleElement", "routeScheduleElementRecommendedCollection", "routeScheduleElementRecommendedComposition"},
         // ---- RouteActionPoints 容器 / RouteActionPoint ----
-        {"RouteActionPoints",    "routeActionPointsCollection",        "routeActionPointsComGM_Point"},
-        {"RouteActionPoints",    "routeActionPoint",                   "routeActionPointComGM_Point"},
-        {"RouteActionPoint",     "routeActionPointCollection",         "routeActionPointComGM_Point"},
+        {"RouteActionPoints",    "routeActionPointsCollection",        "routeActionPointsComposition"},
+        {"RouteActionPoints",    "routeActionPoint",                   "routeActionPointComposition"},
+        {"RouteActionPoint",     "routeActionPointCollection",         "routeActionPointComposition"},
     };
 
     for (const auto& e : kTable) {
@@ -881,7 +899,7 @@ static const char* xlinkTitleFor(const char* parentName, const char* childName) 
 }
 
 // writeRef - 写一个引用元素
-//   <routeInfo xlink:href="#RTE.INFO" xlink:title="routeInfoComGM_Point"/>
+//   <routeInfo xlink:href="#RTE.INFO" xlink:title="routeInfoComposition"/>
 //
 // 【xlink:href 的 # 规则】
 //   本项目所有 gml:id 都以 'R' 开头（RTE、RTE.INFO、RTE.WPT.1…）。
@@ -1019,10 +1037,10 @@ bool S421Serializer::serializeToExchangeSet(const Dataset& dataset,
         return false;
     }
 
-    // 航线描述（MD 和 CATALOG 共用）
+    // 航线描述（MD 和 CATALOG 共用；2.0 模型：Route::info 为按值成员）
     std::string description = "S-421 Route Plan";
-    if (dataset.route->info) {
-        description = dataset.route->info->name;
+    if (!dataset.route->info.name.empty()) {
+        description = dataset.route->info.name;
     }
 
     // Step 2: 确定文件名

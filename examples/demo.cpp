@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 #endif
 
     const std::string file = (argc >= 2) ? argv[1]
-                            : "E:\\S-421\\S-421 sdk\\s421-prod-2.0\\s421-data\\S-421-Edition 2-20260604\\RTE-TEST-GBASIC_20260604.gml";
+                            : "../../dataset/RTE-TEST-GBASIC_20260604.s421";
 
     // 1) 解析（.s421p 走压缩解析，其余走直接 XML 解析）
     s421::S421Parser parser;
@@ -43,6 +43,8 @@ int main(int argc, char* argv[]) {
     std::cout << "校验结果: " << (result.ok() ? "通过" : "未通过")
               << "（错误 " << result.errorCount()
               << " / 警告 " << result.warningCount() << "）\n";
+
+    result.format(std::cout);  // 输出详细错误/警告列表
 
     // 3) 摘要
     s421::FormatResult summary = s421::formatDataset(*dataset, std::cout, false);
