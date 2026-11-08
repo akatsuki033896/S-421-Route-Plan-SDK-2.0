@@ -14,6 +14,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")  # 可执行
 option(BUILD_SHARED_LIBS  "build dll" OFF) # OFF: build lib, ON: build dll
 option(S421_BUILD_TOOL    "build s421_tool" ON)
 option(S421_BUILD_EXAMPLES "build s421_demo" ON)
+option(S421_BUILD_TESTS   "build s421_tests (roundtrip 回环测试)" ON)
 option(S421_INSTALL       "generate install target(lib and headers)" ON)
 
 # 编译期日志级别（见 include/s421/S421Logger.h 的 S421_LOG_LEVEL）
@@ -110,6 +111,28 @@ if(S421_BUILD_EXAMPLES)
     if(MSVC)
         target_compile_options(s421_demo PRIVATE /utf-8)
     endif()
+endif()
+
+# S421-tests（roundtrip 回环测试；官方样本文件不进仓库，用命令行参数传入）
+if(S421_BUILD_TESTS)
+    add_executable(s421_tests
+        tests/test_main.cpp
+        tests/DatasetCompare.cpp
+    )
+    target_link_libraries(s421_tests PRIVATE s421)
+    if(MSVC)
+        target_compile_options(s421_tests PRIVATE /utf-8)
+    endif()
+endif()
+
+# 可选：字段映射表与 XSD 的同步校验（不进默认构建，手动/CI 触发）
+#   cmake --build build --target s421_codegen_check
+find_package(Python3 QUIET COMPONENTS Interpreter)
+if(Python3_FOUND)
+    add_custom_target(s421_codegen_check
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tools/fieldspecGenerate.py --check
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "校验 S421FieldTable.h 是否与 dataset/*.xsd 同步")
 endif()
 
 if(S421_INSTALL)

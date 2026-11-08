@@ -8,6 +8,8 @@
 #include "s421/S421Serializer.h"
 #include "s421/MiniZip.h"
 #include "s421/S421Fs.h"
+#include "S421FieldSpec.h"
+#include "S421FieldTable.h"
 #include <pugixml.hpp>
 #include <sstream>
 #include <iomanip>
@@ -24,38 +26,16 @@ S421Serializer::S421Serializer() = default;
 S421Serializer::~S421Serializer() = default;
 
 // ============================================================
-//  2.0 模型的"按值可选字段"输出辅助
+//  字段输出策略说明（已上移到 FieldSpec 表驱动）
 //
-//  Edition 2.0 数据模型把一部分"可选"字段改成了按值成员（std::string /
-//  double / bool），模型层面无法表达"未设置"。序列化约定：
-//    空字符串 / 0 值 / false  视为未设置，不输出该元素。
-//  这与解析端 getOpt 系列的行为镜像（元素缺失 → 解析为 0/false/空串），
-//  保证 解析→序列化 往返一致；这些字段在 XSD 中均为 minOccurs=0，省略合法。
+//  全部"简单字段 + extensions"的写出由 S421FieldTable.h 的表驱动
+//  （fieldspec::writeFields），表内容（元素名/类别/required/顺序）由 XSD
+//  生成并交叉校验——Parser 与 Serializer 共用同一份映射，改名/增删字段
+//  只需改 XSD + 重新生成。输出约定：
+//    required（XSD minOccurs>=1）恒写；
+//    否则按值成员空串/0/false 视为未设置不写；optional 有值才写。
+//  本文件保留的代码只负责对象图结构：几何、xlink 引用、容器与成员顺序。
 // ============================================================
-
-// 空字符串视为未设置，不输出
-static void writeTextIfNonEmpty(pugi::xml_node& parent, const char* name,
-                                const std::string& value) {
-    if (!value.empty()) {
-        parent.append_child(name).text().set(value.c_str());
-    }
-}
-
-// 0 值视为未设置，不输出（格式与 writeOptDouble 一致：1 位小数）
-static void writeDoubleIfNonZero(pugi::xml_node& parent, const char* name, double value) {
-    if (value != 0.0) {
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(1) << value;
-        parent.append_child(name).text().set(oss.str().c_str());
-    }
-}
-
-// false 视为未设置，不输出
-static void writeBoolIfTrue(pugi::xml_node& parent, const char* name, bool value) {
-    if (value) {
-        parent.append_child(name).text().set("true");
-    }
-}
 
 void S421Serializer::setCoordinatePrecision(int digits) {
     coordPrecision_ = digits;
@@ -234,6 +214,12 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                 pugi::xml_node manNode = members.append_child("RouteScheduleManual");
                 manNode.append_attribute("gml:id") = manId.c_str();
 
+                // extensions 走表（XSD 顺序：extensions 在 collection 引用之前）
+                fieldspec::writeFields(manNode, sched.manual.get(),
+                                       fieldspec::kRouteScheduleManualFields,
+                                       fieldspec::kRouteScheduleManualFieldsCount,
+                                       manId);
+
                 writeRef(manNode, "routeScheduleCollection", schedGmlId,
                          "http://www.iho.int/gml/roles/routeScheduleCollection");
 
@@ -262,6 +248,12 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                 pugi::xml_node calNode = members.append_child("RouteScheduleCalculated");
                 calNode.append_attribute("gml:id") = calId.c_str();
 
+                // extensions 走表（XSD 顺序：extensions 在 collection 引用之前）
+                fieldspec::writeFields(calNode, sched.calculated.get(),
+                                       fieldspec::kRouteScheduleCalculatedFields,
+                                       fieldspec::kRouteScheduleCalculatedFieldsCount,
+                                       calId);
+
                 writeRef(calNode, "routeScheduleCollection", schedGmlId,
                          "http://www.iho.int/gml/roles/routeScheduleCollection");
 
@@ -289,6 +281,12 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                 std::string recId = ids.schedRecIds.at(sid);
                 pugi::xml_node recNode = members.append_child("RouteScheduleRecommended");
                 recNode.append_attribute("gml:id") = recId.c_str();
+
+                // extensions 走表（XSD 顺序：extensions 在 collection 引用之前）
+                fieldspec::writeFields(recNode, sched.recommended.get(),
+                                       fieldspec::kRouteScheduleRecommendedFields,
+                                       fieldspec::kRouteScheduleRecommendedFieldsCount,
+                                       recId);
 
                 writeRef(recNode, "routeScheduleCollection", schedGmlId,
                          "http://www.iho.int/gml/roles/routeSchedule");
@@ -396,26 +394,16 @@ void S421Serializer::writeBoundedBy(pugi::xml_node& parent, const Route& route) 
     uc.text().set(formatPos(route.upperCorner.value()).c_str());
 }
 
-// 航线
+// 航线 —— 简单字段 + extensions 走表；引用是对象图结构，手写
 void S421Serializer::writeRoute(pugi::xml_node& parent, const Route& route, const IdMap& ids) {
     pugi::xml_node routeNode = parent.append_child("Route");
     routeNode.append_attribute("gml:id") = ids.routeId.c_str();
 
-    // 必填字段
-    routeNode.append_child("routeFormatVersion").text().set(route.formatVersion.c_str());
-    routeNode.append_child("routeID").text().set(route.id.c_str());
-    routeNode.append_child("routeEditionNo").text().set(route.editionNo);
-
-    // 以下顺序严格遵循 XSD RouteType 的 xs:sequence：
-    //   FormatVersion → ID → EditionNo → Extensions → routeInfo
-    //   → routeSchedules → routeWaypoints → routeActionPoints
-
-    // Route 级别的扩展（XSD 顺序：紧跟 routeEditionNo 之后）
-    // 2.0 模型：Route::extensions 为单数 optional<RouteExtensions>
-    if (route.extensions.has_value()) {
-        std::string extId = ids.routeId + ".EXT.1";
-        writeExtensions(routeNode, "routeExtensions", {*route.extensions}, extId);
-    }
+    // 表序 = XSD RouteType xs:sequence：
+    //   FormatVersion → ID → EditionNo → Extensions（表内输出到此为止）
+    fieldspec::writeFields(routeNode, &route,
+                           fieldspec::kRouteFields, fieldspec::kRouteFieldsCount,
+                           ids.routeId);
 
     // 引用（指向容器对象）
     writeRef(routeNode, "routeInfo", ids.infoId,
@@ -438,68 +426,15 @@ void S421Serializer::writeRoute(pugi::xml_node& parent, const Route& route, cons
     }
 }
 
-// 航线信息
+// 航线信息 —— 全部为简单字段 + extensions，整体走表（约 30 个字段一处声明）
 void S421Serializer::writeRouteInfo(pugi::xml_node& parent, const RouteInfo& info,
                                      const IdMap& ids) {
     pugi::xml_node infoNode = parent.append_child("RouteInfo");
     infoNode.append_attribute("gml:id") = ids.infoId.c_str();
 
-    // 以下顺序严格遵循 XSD RouteInfoType 的 xs:sequence：
-    //   Name → Author → EditionTime → Description → Status → MasterApproval
-    //   → ValidityStart/End → 港口 → Reference* → typeOfShip → 船舶 → 尺寸 → Extensions
-
-    infoNode.append_child("routeInfoName").text().set(info.name.c_str());
-
-    // 可选字段（2.0 模型改为按值 std::string：空串视为未设置，不输出）
-    writeTextIfNonEmpty(infoNode, "routeInfoAuthor", info.author);
-    writeTextIfNonEmpty(infoNode, "routeInfoEditionTime", info.editionTime);
-    writeTextIfNonEmpty(infoNode, "routeInfoDescription", info.description);
-
-    // 2.0：status 输出文本（如 "Planned"）——XSD 顺序在 Description 之后
-    infoNode.append_child("routeInfoStatus").text().set(toString(info.status));
-
-    writeOptBool(infoNode, "routeInfoMasterApproval", info.masterApproval);
-
-    writeTextIfNonEmpty(infoNode, "routeInfoValidityStart", info.validityStart);
-    writeTextIfNonEmpty(infoNode, "routeInfoValidityEnd", info.validityEnd);
-
-    // 港口
-    writeOptText(infoNode, "routeInfoDeparturePortID1", info.departurePortID1);
-    writeOptText(infoNode, "routeInfoDeparturePortID2", info.departurePortID2);
-    writeOptText(infoNode, "routeInfoDeparturePortCall", info.departurePortCall);
-    writeOptText(infoNode, "routeInfoArrivalPortID1", info.arrivalPortID1);
-    writeOptText(infoNode, "routeInfoArrivalPortID2", info.arrivalPortID2);
-    writeOptText(infoNode, "routeInfoArrivalPortCall", info.arrivalPortCall);
-
-    // 引用
-    writeOptText(infoNode, "routeInfoReferencePrevRoute", info.referencePrevRoute);
-    writeOptText(infoNode, "routeInfoReferenceNextRoute", info.referenceNextRoute);
-
-    // 船舶（2.0：typeOfShip 文本枚举，取代旧 routeInfoVesselType；模型字段名 vesselType）
-    if (info.vesselType.has_value()) {
-        infoNode.append_child("typeOfShip").text().set(toString(*info.vesselType));
-    }
-    writeOptText(infoNode, "routeInfoVesselName", info.vesselName);
-    writeTextIfNonEmpty(infoNode, "routeInfoVesselMMSI", info.vesselMMSI);
-    writeOptText(infoNode, "routeInfoVesselCallsign", info.vesselCallsign);
-    writeOptText(infoNode, "routeInfoVesselIMO", info.vesselIMO);
-    writeOptText(infoNode, "routeInfoVesselVoyage", info.vesselVoyage);
-
-    // 船舶尺寸
-    writeOptDouble(infoNode, "routeInfoVesselHeight", info.vesselHeight);
-    writeOptDouble(infoNode, "routeInfoVesselLength", info.vesselLength);
-    writeOptDouble(infoNode, "routeInfoVesselBeam", info.vesselBeam);
-    writeOptDouble(infoNode, "routeInfoDraftMax", info.draftMax);
-    writeOptDouble(infoNode, "routeInfoAirDraftMax", info.airDraftMax);
-    writeOptDouble(infoNode, "routeInfoBeamMax", info.beamMax);
-    writeOptDouble(infoNode, "routeInfoLengthMax", info.lengthMax);
-
-    // 扩展（2.0 模型：单数 optional<RouteExtensions>）
-    if (info.extensions.has_value()) {
-        pugi::xml_node extWrapper = infoNode.append_child("routeInfoExtensions");
-        std::string extId = ids.infoId + ".EXT.1";
-        writeExtensions(extWrapper, "routeExtensions", {*info.extensions}, extId);
-    }
+    fieldspec::writeFields(infoNode, &info,
+                           fieldspec::kRouteInfoFields, fieldspec::kRouteInfoFieldsCount,
+                           ids.infoId);
 }
 
 void S421Serializer::writeWaypointsContainer(pugi::xml_node& parent,
@@ -532,30 +467,12 @@ void S421Serializer::writeWaypoint(pugi::xml_node& parent, const RouteWaypoint& 
     pugi::xml_node wpNode = parent.append_child("RouteWaypoint");
     wpNode.append_attribute("gml:id") = wpGmlId.c_str();
 
-    // 以下子元素顺序严格遵循 XSD RouteWaypointType 的 xs:sequence：
-    //   ID → Name → ExternalReferenceID → Fixed → TurnRadius → Extensions
-    //   → targetWaypoint → Collection → Leg → geometry（geometry 必须最后）
-
-    // 必填字段
-    wpNode.append_child("routeWaypointID").text().set(wp.id);
-
-    // 可选字段（2.0 模型：name 为按值 std::string、fixed 为按值 bool，空值视为未设置）
-    writeTextIfNonEmpty(wpNode, "routeWaypointName", wp.name);
-    writeOptText(wpNode, "routeWaypointExternalReferenceID", wp.externalRefID);
-    writeBoolIfTrue(wpNode, "routeWaypointFixed", wp.fixed);
-
-    wpNode.append_child("routeWaypointTurnRadius").text().set(
-        std::to_string(wp.turnRadius).c_str());
-
-    // 扩展（XSD 顺序：TurnRadius 之后、targetWaypoint 之前；2.0 模型为单数 optional）
-    if (wp.extensions.has_value()) {
-        pugi::xml_node extWrapper = wpNode.append_child("routeWaypointExtensions");
-        std::string extId = wpGmlId + ".EXT.1";
-        writeExtensions(extWrapper, "routeExtensions", {*wp.extensions}, extId);
-    }
-
-    // （2.0 模型：航点不再持有 targetWaypoint 引用——航点与调度元素的关联
-    //   由 RouteScheduleElement::waypointId 表达，见 S421DataModel.h）
+    // 简单字段 + extensions 走表（表序 = XSD RouteWaypointType xs:sequence，
+    // 输出到 Extensions 为止；targetWaypoint 在 2.0 模型中已不存在——
+    // 航点与调度元素的关联由 RouteScheduleElement::waypointId 表达）
+    fieldspec::writeFields(wpNode, &wp,
+                           fieldspec::kRouteWaypointFields, fieldspec::kRouteWaypointFieldsCount,
+                           wpGmlId);
 
     // 反向引用到容器
     writeRef(wpNode, "routeWaypointCollection", ids.wptsContainerId,
@@ -587,41 +504,12 @@ void S421Serializer::writeLeg(pugi::xml_node& parent, const RouteWaypointLeg& le
 
     // 本函数内所有子元素的输出顺序严格遵循 XSD 的 xs:sequence
     // （RouteWaypointLegType）：sequence 元素顺序不可乱，否则 schema 校验失败。
-    // 注意：geometry 是 sequence 的最后一个元素，必须最后写。
+    // 简单字段 + extensions 全部走表（表序 = XSD 序）；geometry 是 sequence
+    // 的最后一个元素，由本函数末尾手写。
 
-    writeOptDouble(legNode, "routeWaypointLegAirDraftMax", leg.airDraftMax);
-    writeOptDouble(legNode, "routeWaypointLegBeamMax", leg.beamMax);
-    writeOptDouble(legNode, "routeWaypointLegDraft", leg.draft);
-    writeOptDouble(legNode, "routeWaypointLegDraftAft", leg.draftAft);
-    writeOptDouble(legNode, "routeWaypointLegDraftForward", leg.draftForward);
-    writeOptDouble(legNode, "routeWaypointLegDraftMax", leg.draftMax);
-    writeOptDouble(legNode, "routeWaypointLegDynamicUKC", leg.dynamicUKC);
-
-    // 必填：几何类型（2.0：文本 loxodrome/orthodrome）
-    legNode.append_child("routeWaypointLegGeometryType").text().set(toString(leg.geometryType));
-
-    writeOptText(legNode, "routeWaypointLegIssue", leg.issue);
-    writeOptDouble(legNode, "routeWaypointLegLengthMax", leg.lengthMax);
-    writeOptText(legNode, "routeWaypointLegNote", leg.note);
-    writeOptInt(legNode, "routeWaypointLegPortCL", leg.portCL);
-    writeOptInt(legNode, "routeWaypointLegPortXTDL", leg.portXTDL);
-    writeOptDouble(legNode, "routeWaypointLegSafetyContour", leg.safetyContour);
-    writeOptDouble(legNode, "routeWaypointLegSafetyDepth", leg.safetyDepth);
-    writeOptDouble(legNode, "routeWaypointLegSafetyMargin", leg.safetyMargin);
-    writeOptDouble(legNode, "routeWaypointLegSOGMax", leg.sogMax);
-    writeOptDouble(legNode, "routeWaypointLegSOGMin", leg.sogMin);
-    writeOptInt(legNode, "routeWaypointLegStarboardCL", leg.starboardCL);
-    writeOptInt(legNode, "routeWaypointLegStarboardXTDL", leg.starboardXTDL);
-    writeOptDouble(legNode, "routeWaypointLegStaticUKC", leg.staticUKC);
-    writeOptDouble(legNode, "routeWaypointLegSTWMax", leg.stwMax);
-    writeOptDouble(legNode, "routeWaypointLegSTWMin", leg.stwMin);
-
-    // 扩展（XSD 顺序：extensions 在 collection 之前；2.0 模型为单数 optional）
-    if (leg.extensions.has_value()) {
-        pugi::xml_node extWrapper = legNode.append_child("routeWaypointLegExtensions");
-        std::string extId = legGmlId + ".EXT.1";
-        writeExtensions(extWrapper, "routeExtensions", {*leg.extensions}, extId);
-    }
+    fieldspec::writeFields(legNode, &leg,
+                           fieldspec::kRouteWaypointLegFields, fieldspec::kRouteWaypointLegFieldsCount,
+                           legGmlId);
 
     // 反向引用：指向关联的 Waypoint
     // Leg 的 waypointLegCollection 指向下一个航点（Leg 的终点）
@@ -664,34 +552,11 @@ void S421Serializer::writeActionPoint(pugi::xml_node& parent,
     pugi::xml_node apNode = parent.append_child("RouteActionPoint");
     apNode.append_attribute("gml:id") = apGmlId.c_str();
 
-    // 以下顺序严格遵循 XSD RouteActionPointType 的 xs:sequence：
-    //   ID → Name → ExternalReference → Radius → TimetoAct
-    //   → RequiredAction → RequiredActionDescription → Extensions
-    //   → Collection → geometry（geometry 必须最后）
-
-    // 必填
-    apNode.append_child("routeActionPointID").text().set(ap.id);
-
-    // 可选
-    writeOptText(apNode, "routeActionPointName", ap.name);
-    writeOptText(apNode, "routeActionPointExternalReference", ap.externalRef);
-    // 2.0 模型：radius/timeToAct 为按值 double（0 视为未设置）。
-    // 模型字段 radius 对应 XSD 元素 routeActionPointRadius；
-    // XSD 元素名是小写 t 的 TimetoAct
-    writeDoubleIfNonZero(apNode, "routeActionPointRadius", ap.radius);
-    writeDoubleIfNonZero(apNode, "routeActionPointTimetoAct", ap.timeToAct);
-
-    // 2.0：requiredAction 输出文本（如 "Report"）
-    apNode.append_child("routeActionPointRequiredAction").text().set(toString(ap.requiredAction));
-    apNode.append_child("routeActionPointRequiredActionDescription").text().set(
-        ap.actionDescription.c_str());
-
-    // 扩展（2.0 模型：单数 optional<RouteExtensions>）
-    if (ap.extensions.has_value()) {
-        pugi::xml_node extWrapper = apNode.append_child("routeActionPointExtensions");
-        std::string extId = apGmlId + ".EXT.1";
-        writeExtensions(extWrapper, "routeExtensions", {*ap.extensions}, extId);
-    }
+    // 简单字段 + extensions 走表（表序 = XSD RouteActionPointType xs:sequence，
+    // 输出到 Extensions 为止；Collection 引用与 geometry 由下方手写）
+    fieldspec::writeFields(apNode, &ap,
+                           fieldspec::kRouteActionPointFields, fieldspec::kRouteActionPointFieldsCount,
+                           apGmlId);
 
     // 反向引用
     writeRef(apNode, "routeActionPointCollection", ids.aptsContainerId,
@@ -729,8 +594,11 @@ void S421Serializer::writeSchedule(pugi::xml_node& parent, const RouteSchedule& 
     pugi::xml_node schedNode = parent.append_child("RouteSchedule");
     schedNode.append_attribute("gml:id") = schedGmlId.c_str();
 
-    schedNode.append_child("routeScheduleID").text().set(sid);
-    writeOptText(schedNode, "routeScheduleName", sched.name);
+    // id / name / extensions 走表（表序 = XSD RouteScheduleType xs:sequence，
+    // 输出到 Extensions 为止；Collection 与 Manual/Calc/Rec 引用由下方手写）
+    fieldspec::writeFields(schedNode, &sched,
+                           fieldspec::kRouteScheduleFields, fieldspec::kRouteScheduleFieldsCount,
+                           schedGmlId);
 
     // 反向引用
     writeRef(schedNode, "routeScheduleCollection", ids.schedsContainerId,
@@ -769,17 +637,11 @@ void S421Serializer::writeScheduleElement(pugi::xml_node& parent,
     pugi::xml_node elemNode = parent.append_child("RouteScheduleElement");
     elemNode.append_attribute("gml:id") = elemId.c_str();
 
-    elemNode.append_child("routeWaypointID").text().set(elem.waypointId);
-
-    // 2.0 模型：planSOG/etd/eta 为按值成员（0/空串视为未设置）
-    writeDoubleIfNonZero(elemNode, "routeScheduleElementPlanSOG", elem.planSOG);
-    writeTextIfNonEmpty(elemNode, "routeScheduleElementETD", elem.etd);
-    writeTextIfNonEmpty(elemNode, "routeScheduleElementETA", elem.eta);
-    writeOptInt(elemNode, "routeScheduleElementETDWindowBefore", elem.etdWindowBefore);
-    writeOptInt(elemNode, "routeScheduleElementETDWindowAfter", elem.etdWindowAfter);
-    writeOptInt(elemNode, "routeScheduleElementETAWindowBefore", elem.etaWindowBefore);
-    writeOptInt(elemNode, "routeScheduleElementETAWindowAfter", elem.etaWindowAfter);
-    writeOptText(elemNode, "routeScheduleElementNote", elem.note);
+    // 简单字段 + extensions 走表（表序 = XSD RouteScheduleElementType xs:sequence，
+    // 输出到 Note 为止；所属容器回指由下方手写）
+    fieldspec::writeFields(elemNode, &elem,
+                           fieldspec::kRouteScheduleElementFields, fieldspec::kRouteScheduleElementFieldsCount,
+                           elemId);
 
     // 反向引用到所属容器
     writeRef(elemNode, collectionNodeName, collectionId,
@@ -813,32 +675,15 @@ void S421Serializer::writeCurveGeometry(pugi::xml_node& parent,
     ls.append_child("gml:posList").text().set(posList.c_str());
 }
 
-// 厂商扩展（2.0 模型：RouteExtensions 的 name/version/content 为 optional<std::string>）
+// 厂商扩展 —— 委托给 fieldspec 共享实现（与解析端 parseExtension 同源）
+// 说明：字段写入已全部由 writeFields 表驱动（Extensions 行），本方法保留
+// 以维持头文件声明的可用性，仅供表外特殊场景调用。
 void S421Serializer::writeExtensions(pugi::xml_node& parent, const char* wrapperName,
                                       const std::vector<RouteExtensions>& extensions,
                                       const std::string& baseId) {
-    int seq = 1;
     for (const auto& ext : extensions) {
-        std::string extId = baseId.empty()
-            ? std::string("EXT.") + std::to_string(seq)
-            : baseId;
-
-        pugi::xml_node extNode = parent.append_child(wrapperName);
-        extNode.append_attribute("gml:id") = extId.c_str();
-        extNode.append_attribute("routeExtensionsManufacturerId") = ext.manufacturerId.c_str();
-
-        if (ext.name.has_value()) {
-            extNode.append_attribute("routeExtensionsName") = ext.name.value().c_str();
-        }
-        if (ext.version.has_value()) {
-            extNode.append_attribute("routeExtensionsVersion") = ext.version.value().c_str();
-        }
-
-        // Note（解析端把多个 note 合并进 content，此处原样写回）
-        if (ext.content.has_value()) {
-            extNode.append_child("routeExtensionsNote").text().set(ext.content.value().c_str());
-        }
-        seq++;
+        fieldspec::writeRouteExtensionsNode(parent, wrapperName, ext,
+            baseId.empty() ? std::string("EXT") : baseId);
     }
 }
 

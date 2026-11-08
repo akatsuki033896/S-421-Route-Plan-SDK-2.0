@@ -69,3 +69,24 @@ copy `.h` and `s421.lib` to your project directories
 add_subdirectory(s421-prod-2.0)
 target_link_libraries(your_project_name PRIVATE s421)
 ```
+
+### Tests
+
+roundtrip 回环测试（解析 → 序列化 → 再解析 → 逐字段比对），随默认构建生成 `s421_tests`：
+
+```sh
+./build/bin/s421_tests                                # 内置样本：模型/XML/ZIP 回环 + 序列化确定性
+./build/bin/s421_tests path/to/sample.gml [...]       # 附加外部样本文件回归（见 tests/data/README.md）
+```
+
+### Schema Codegen
+
+字段映射表 `src/S421FieldTable.h` 由 XSD 生成（Parser/Serializer 读写共用，勿手改）：
+
+```sh
+python3 tools/fieldspecGenerate.py            # 从 dataset/S-421_schema_20260604.xsd 重新生成
+python3 tools/fieldspecGenerate.py --check    # 校验生成物与 XSD 是否同步（CI 用，漂移则退出码 1）
+cmake --build build --target s421_codegen_check   # 同上，CMake 目标形式
+```
+
+schema 升级（如 2.0 → 2.1）流程：替换 XSD → 跑生成器（漂移处报错并逐条处理）→ 跑 roundtrip 测试。

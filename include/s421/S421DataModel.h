@@ -150,7 +150,7 @@ class RouteScheduleElement
 public:
     int waypointId = 0; ///< 关联的航路点 ID（targetWaypoint 引用 → RouteWaypoint::id）
 
-    double planSOG;                      ///< 计划对地航速（节）
+    double planSOG = 0.0;                      ///< 计划对地航速（节）
     std::string etd;                     ///< 预计离开时间（Estimated Time of Departure）
     std::string eta;                     ///< 预计到达时间（Estimated Time of Arrival）
     s421::optional<int> etdWindowBefore; ///< ETD 时间窗口（提前量，分钟）
@@ -180,9 +180,7 @@ public:
     s421::optional<RouteExtensions> extensions; ///< 厂商扩展列表
 
     // 组合 0..1：nullptr = 该航点无航段信息
-    std::unique_ptr<RouteWaypointLeg> leg; ///< 航段信息（连接到下一个航路点的航段）
-    // 注：图 1 中 waypoint ↔ scheduleElement 是虚线引用关联（targetWaypoint/scheduleOf），
-    //     非组合，故不设成员；该引用由 RouteScheduleElement::waypointId 表达。
+    std::unique_ptr<RouteWaypointLeg> leg;      ///< 航段信息（连接到下一个航路点的航段）
 };
 
 /**

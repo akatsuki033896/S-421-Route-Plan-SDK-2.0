@@ -13,6 +13,8 @@
 #include "s421/S421Parser.h"
 #include "s421/MiniUnzip.h"
 #include "s421/S421Fs.h"
+#include "S421FieldSpec.h"
+#include "S421FieldTable.h"
 #include <pugixml.hpp>
 #include <fstream>
 #include <sstream>
@@ -126,7 +128,7 @@ std::unique_ptr<Dataset> S421Parser::parseExchangeSet(const std::string& exchang
     s421::fs::forEachRegularFile(dir, [&](const std::string& path) {
         if (path.find(".s421") != std::string::npos
             && path.find(".xml") == std::string::npos
-            && path.find(".s421p") != std::string::npos) {
+            && path.find(".s421p") == std::string::npos) {
             auto dataset = parseFile(path);
             if (dataset) {
                 found = std::move(dataset);  // 回调中拿到结果，跳出后返回
@@ -281,19 +283,8 @@ GM_Point S421Parser::parsePointGeometry(pugi::xml_node geometryNode) {
 //    </routeExtensions>
 // ============================================================
 RouteExtensions S421Parser::parseExtension(pugi::xml_node extNode) {
-    RouteExtensions ext;
-    ext.manufacturerId = extNode.attribute("routeExtensionsManufacturerId").value();
-    ext.name = extNode.attribute("routeExtensionsName").value();
-    ext.version = extNode.attribute("routeExtensionsVersion").value();
-
-    // 收集所有 note（可以有多个）
-    std::string content;
-    for (pugi::xml_node note : extNode.children("routeExtensionsNote")) {
-        if (!content.empty()) content += "\n";
-        content += note.text().get();
-    }
-    if (!content.empty()) ext.content = content;
-    return ext;
+    // 与序列化端共享同一实现（fieldspec 框架），消除读/写两侧的镜像重复
+    return fieldspec::parseRouteExtensionsNode(extNode);
 }
 
 // ============================================================
@@ -568,21 +559,26 @@ std::unique_ptr<Dataset> S421Parser::buildFromDoc(pugi::xml_document& doc) {
                 RouteSchedule sched;
                 pugi::xml_node schedNode = it->second;
 
-                sched.id = schedNode.child("routeScheduleID").text().as_int();
-                sched.name = getOptText(schedNode, "routeScheduleName");
+                // id / name / extensions 走表
+                fieldspec::readFields(schedNode, &sched,
+                                      fieldspec::kRouteScheduleFields,
+                                      fieldspec::kRouteScheduleFieldsCount);
 
                 // 查找 Manual/Calculated/Recommended 引用
                 pugi::xml_node manualRef = schedNode.child("routeScheduleManual");
                 pugi::xml_node calcRef = schedNode.child("routeScheduleCalculated");
                 pugi::xml_node recRef = schedNode.child("routeScheduleRecommended");
 
-                // 解析 Manual 元素
+                // 解析 Manual 容器（extensions 走表）+ 元素引用
                 if (!manualRef.empty()) {
                     const char* mHref = manualRef.attribute("xlink:href").value();
                     if (mHref && mHref[0] == '#') {
                         auto mIt = schedManualNodes.find(mHref + 1);
                         if (mIt != schedManualNodes.end()) {
                             if (!sched.manual) sched.manual = std::make_unique<RouteScheduleManual>();
+                            fieldspec::readFields(mIt->second, sched.manual.get(),
+                                                  fieldspec::kRouteScheduleManualFields,
+                                                  fieldspec::kRouteScheduleManualFieldsCount);
                             for (pugi::xml_node elemRef : mIt->second.children("routeScheduleElement")) {
                                 const char* eHref = elemRef.attribute("xlink:href").value();
                                 if (eHref && eHref[0] == '#') {
@@ -596,13 +592,16 @@ std::unique_ptr<Dataset> S421Parser::buildFromDoc(pugi::xml_document& doc) {
                     }
                 }
 
-                // 解析 Calculated 元素
+                // 解析 Calculated 容器（extensions 走表）+ 元素引用
                 if (!calcRef.empty()) {
                     const char* cHref = calcRef.attribute("xlink:href").value();
                     if (cHref && cHref[0] == '#') {
                         auto cIt = schedCalcNodes.find(cHref + 1);
                         if (cIt != schedCalcNodes.end()) {
                             if (!sched.calculated) sched.calculated = std::make_unique<RouteScheduleCalculated>();
+                            fieldspec::readFields(cIt->second, sched.calculated.get(),
+                                                  fieldspec::kRouteScheduleCalculatedFields,
+                                                  fieldspec::kRouteScheduleCalculatedFieldsCount);
                             for (pugi::xml_node elemRef : cIt->second.children("routeScheduleElement")) {
                                 const char* eHref = elemRef.attribute("xlink:href").value();
                                 if (eHref && eHref[0] == '#') {
@@ -616,13 +615,16 @@ std::unique_ptr<Dataset> S421Parser::buildFromDoc(pugi::xml_document& doc) {
                     }
                 }
 
-                // 解析 Recommended 元素
+                // 解析 Recommended 容器（extensions 走表）+ 元素引用
                 if (!recRef.empty()) {
                     const char* rHref = recRef.attribute("xlink:href").value();
                     if (rHref && rHref[0] == '#') {
                         auto rIt = schedRecNodes.find(rHref + 1);
                         if (rIt != schedRecNodes.end()) {
                             if (!sched.recommended) sched.recommended = std::make_unique<RouteScheduleRecommended>();
+                            fieldspec::readFields(rIt->second, sched.recommended.get(),
+                                                  fieldspec::kRouteScheduleRecommendedFields,
+                                                  fieldspec::kRouteScheduleRecommendedFieldsCount);
                             for (pugi::xml_node elemRef : rIt->second.children("routeScheduleElement")) {
                                 const char* eHref = elemRef.attribute("xlink:href").value();
                                 if (eHref && eHref[0] == '#') {
@@ -651,215 +653,74 @@ std::unique_ptr<Dataset> S421Parser::buildFromDoc(pugi::xml_document& doc) {
 }
 
 // ============================================================
-//  parseRoute
+//  parseRoute —— 走 FieldSpec 表（表由 XSD 生成，读写共用）
 // ============================================================
 std::unique_ptr<Route> S421Parser::parseRoute(pugi::xml_node node) {
     auto route = std::make_unique<Route>();
-
-    route->formatVersion = node.child("routeFormatVersion").text().get();
-    route->id = node.child("routeID").text().get();
-    route->editionNo = node.child("routeEditionNo").text().as_int();
-
-    // 解析 Route 级别的 Extensions
-    for (pugi::xml_node ext : node.children("routeExtensions")) {
-        route->extensions = parseExtension(ext);
-    }
-
+    fieldspec::readFields(node, route.get(),
+                          fieldspec::kRouteFields, fieldspec::kRouteFieldsCount);
     return route;
 }
 
 // ============================================================
-//  parseRouteInfo
+//  parseRouteInfo —— 走 FieldSpec 表（约 30 个字段一处声明，读侧零手写）
 // ============================================================
 RouteInfo S421Parser::parseRouteInfo(pugi::xml_node node) {
     RouteInfo info;
-
-    // 必填
-    info.name = node.child("routeInfoName").text().get();
-    // 2.0：status 存的是文本（如 "Planned"），用 fromString 解析
-    {
-        std::string statusText = node.child("routeInfoStatus").text().get();
-        RouteInfoStatus st;
-        info.status = fromString(statusText, st) ? st : RouteInfoStatus::Initial;
-    }
-
-    info.author = node.child("routeInfoAuthor").text().get();
-    info.editionTime = node.child("routeInfoEditionTime").text().get();
-    info.description = node.child("routeInfoDescription").text().get();
-    info.validityStart = node.child("routeInfoValidityStart").text().get();
-    info.validityEnd = node.child("routeInfoValidityEnd").text().get();
-
-    // 港口
-    info.departurePortID1 = getOptText(node, "routeInfoDeparturePortID1");
-    info.departurePortID2 = getOptText(node, "routeInfoDeparturePortID2");
-    info.departurePortCall = getOptText(node, "routeInfoDeparturePortCall");
-    info.arrivalPortID1 = getOptText(node, "routeInfoArrivalPortID1");
-    info.arrivalPortID2 = getOptText(node, "routeInfoArrivalPortID2");
-    info.arrivalPortCall = getOptText(node, "routeInfoArrivalPortCall");
-
-    // 引用
-    info.referencePrevRoute = getOptText(node, "routeInfoReferencePrevRoute");
-    info.referenceNextRoute = getOptText(node, "routeInfoReferenceNextRoute");
-
-    // 船舶
-    // 2.0：routeInfoVesselType(数字) 删除，改为 typeOfShip(文本枚举)
-    if (auto ts = getOptText(node, "typeOfShip")) {
-        TypeOfShip t;
-        if (fromString(*ts, t)) info.vesselType = t;
-    }
-    info.masterApproval = getOptBool(node, "routeInfoMasterApproval");
-    info.vesselName = getOptText(node, "routeInfoVesselName");
-    info.vesselMMSI = node.child("routeInfoVesselMMSI").text().get();
-    info.vesselCallsign = getOptText(node, "routeInfoVesselCallsign");
-    info.vesselIMO = getOptText(node, "routeInfoVesselIMO");
-    info.vesselVoyage = getOptText(node, "routeInfoVesselVoyage");
-
-    // 尺寸
-    info.vesselHeight = getOptDouble(node, "routeInfoVesselHeight");
-    info.vesselLength = getOptDouble(node, "routeInfoVesselLength");
-    info.vesselBeam = getOptDouble(node, "routeInfoVesselBeam");
-    info.draftMax = getOptDouble(node, "routeInfoDraftMax");
-    info.airDraftMax = getOptDouble(node, "routeInfoAirDraftMax");
-    info.beamMax = getOptDouble(node, "routeInfoBeamMax");
-    info.lengthMax = getOptDouble(node, "routeInfoLengthMax");
-
-    // Extensions
-    for (pugi::xml_node ext : node.children("routeInfoExtensions")) {
-        for (pugi::xml_node re : ext.children("routeExtensions")) {
-            info.extensions = parseExtension(re);
-        }
-    }
-
+    fieldspec::readFields(node, &info,
+                          fieldspec::kRouteInfoFields, fieldspec::kRouteInfoFieldsCount);
     return info;
 }
 
 // ============================================================
-//  parseWaypoint
+//  parseWaypoint —— 简单字段走表；几何与 leg 引用是对象图结构，仍手写
 // ============================================================
 RouteWaypoint S421Parser::parseWaypoint(pugi::xml_node node) {
     RouteWaypoint wp;
 
-    // 几何坐标
+    fieldspec::readFields(node, &wp,
+                          fieldspec::kRouteWaypointFields, fieldspec::kRouteWaypointFieldsCount);
+
+    // 几何坐标（结构性，不进字段表）
     pugi::xml_node geomNode = node.child("geometry");
     if (!geomNode.empty()) {
         wp.geometry = parsePointGeometry(geomNode);
-    }
-
-    // 必填属性
-    wp.id = node.child("routeWaypointID").text().as_int();
-    wp.turnRadius = node.child("routeWaypointTurnRadius").text().as_double();
-
-    // 可选属性
-    wp.name = node.child("routeWaypointName").text().get();
-    wp.externalRefID = getOptText(node, "routeWaypointExternalReferenceID");
-    if (auto f = getOptBool(node, "routeWaypointFixed")) wp.fixed = *f;
-
-    // Extensions
-    for (pugi::xml_node ext : node.children("routeWaypointExtensions")) {
-        for (pugi::xml_node re : ext.children("routeExtensions")) {
-            wp.extensions = parseExtension(re);
-        }
     }
 
     return wp;
 }
 
 // ============================================================
-//  parseLeg
+//  parseLeg —— 全部为简单字段 + extensions，整体走表
 // ============================================================
 RouteWaypointLeg S421Parser::parseLeg(pugi::xml_node node) {
     RouteWaypointLeg leg;
-
-    // 必填：几何类型（2.0：文本 loxodrome/orthodrome，用前缀匹配 fromString）
-    {
-        std::string geoText = node.child("routeWaypointLegGeometryType").text().get();
-        LegGeometryType gt;
-        if (fromString(geoText, gt)) leg.geometryType = gt;
-    }
-
-    // 横偏距
-    leg.starboardXTDL = getOptInt(node, "routeWaypointLegStarboardXTDL");
-    leg.portXTDL = getOptInt(node, "routeWaypointLegPortXTDL");
-    leg.starboardCL = getOptInt(node, "routeWaypointLegStarboardCL");
-    leg.portCL = getOptInt(node, "routeWaypointLegPortCL");
-
-    // 安全参数
-    leg.safetyContour = getOptDouble(node, "routeWaypointLegSafetyContour");
-    leg.safetyDepth = getOptDouble(node, "routeWaypointLegSafetyDepth");
-    leg.staticUKC = getOptDouble(node, "routeWaypointLegStaticUKC");
-    leg.dynamicUKC = getOptDouble(node, "routeWaypointLegDynamicUKC");
-    leg.safetyMargin = getOptDouble(node, "routeWaypointLegSafetyMargin");
-
-    // 航速
-    leg.sogMin = getOptDouble(node, "routeWaypointLegSOGMin");
-    leg.sogMax = getOptDouble(node, "routeWaypointLegSOGMax");
-    leg.stwMin = getOptDouble(node, "routeWaypointLegSTWMin");
-    leg.stwMax = getOptDouble(node, "routeWaypointLegSTWMax");
-
-    // 吃水
-    leg.draft = getOptDouble(node, "routeWaypointLegDraft");
-    leg.draftForward = getOptDouble(node, "routeWaypointLegDraftForward");
-    leg.draftAft = getOptDouble(node, "routeWaypointLegDraftAft");
-    leg.draftMax = getOptDouble(node, "routeWaypointLegDraftMax");
-    leg.airDraftMax = getOptDouble(node, "routeWaypointLegAirDraftMax");
-    leg.beamMax = getOptDouble(node, "routeWaypointLegBeamMax");
-    leg.lengthMax = getOptDouble(node, "routeWaypointLegLengthMax");
-
-    // 备注/问题
-    leg.note = getOptText(node, "routeWaypointLegNote");
-    leg.issue = getOptText(node, "routeWaypointLegIssue");
-
-    // Extensions
-    for (pugi::xml_node ext : node.children("routeWaypointLegExtensions")) {
-        for (pugi::xml_node re : ext.children("routeExtensions")) {
-            leg.extensions = parseExtension(re);
-        }
-    }
-
+    fieldspec::readFields(node, &leg,
+                          fieldspec::kRouteWaypointLegFields, fieldspec::kRouteWaypointLegFieldsCount);
     return leg;
 }
 
 // ============================================================
-//  parseActionPoint
+//  parseActionPoint —— 简单字段走表；几何结构性手写；保留一处历史容错
 // ============================================================
 RouteActionPoint S421Parser::parseActionPoint(pugi::xml_node node) {
     RouteActionPoint ap;
 
-    ap.id = node.child("routeActionPointID").text().as_int();
-    ap.name = getOptText(node, "routeActionPointName");
-    ap.externalRef = getOptText(node, "routeActionPointExternalReference");
-    
+    fieldspec::readFields(node, &ap,
+                          fieldspec::kRouteActionPointFields, fieldspec::kRouteActionPointFieldsCount);
+
+    // 几何坐标（结构性，不进字段表）
     pugi::xml_node geomNode = node.child("geometry");
     if (!geomNode.empty()) {
         ap.geometry = parsePointGeometry(geomNode);
     }
 
-    ap.radius = node.child("routeActionPointRadius").text().as_double();
-
-    {
-        pugi::xml_node tta = node.child("routeActionPointTimetoAct");
-        if (tta.empty())
-        {
-            tta = node.child("routeActionPointTimeToAct");
-        }
-        ap.timeToAct = tta.text().as_double();
+    // 历史容错：个别文件用大写 TimeToAct（XSD 权威名是小写 t 的 TimetoAct）
+    if (ap.timeToAct == 0.0) {
+        pugi::xml_node tta = node.child("routeActionPointTimeToAct");
+        if (!tta.empty()) ap.timeToAct = tta.text().as_double();
     }
 
-    // 2.0：requiredAction 存的是文本（如 "Report"），用 fromString 解析
-    {
-        std::string actText = node.child("routeActionPointRequiredAction").text().get();
-        ActionType at;
-        if (fromString(actText, at)) ap.requiredAction = at;
-    }
-
-    ap.actionDescription = node.child("routeActionPointRequiredActionDescription").text().get();
-
-    // Extensions
-    for (pugi::xml_node ext : node.children("routeActionPointExtensions")) {
-        for (pugi::xml_node re : ext.children("routeExtensions")) {
-            ap.extensions = parseExtension(re);
-        }
-    }
     return ap;
 }
 
@@ -870,8 +731,9 @@ RouteActionPoint S421Parser::parseActionPoint(pugi::xml_node node) {
 RouteSchedule S421Parser::parseSchedule(pugi::xml_node node) {
     RouteSchedule sched;
 
-    sched.id = node.child("routeScheduleID").text().as_int();
-    sched.name = getOptText(node, "routeScheduleName");
+    // id / name / extensions 走表（extensions 为 FieldSpec 化后新增读取，原实现丢弃）
+    fieldspec::readFields(node, &sched,
+                          fieldspec::kRouteScheduleFields, fieldspec::kRouteScheduleFieldsCount);
 
     // 注意: Manual/Calculated/Recommended 的引用和 Element 可能在文档的不同 imember 中
     // 这里需要通过 resolveRef 找到它们
@@ -889,6 +751,9 @@ RouteSchedule S421Parser::parseSchedule(pugi::xml_node node) {
 
             if (name.find("RouteScheduleManual") != std::string::npos) {
                 if (!sched.manual) sched.manual = std::make_unique<RouteScheduleManual>();
+                fieldspec::readFields(child, sched.manual.get(),
+                                      fieldspec::kRouteScheduleManualFields,
+                                      fieldspec::kRouteScheduleManualFieldsCount);
                 for (pugi::xml_node elemRef : child.children("routeScheduleElement")) {
                     const char* href = elemRef.attribute("xlink:href").value();
                     pugi::xml_node elemNode = resolveRef(docRoot, href);
@@ -899,6 +764,9 @@ RouteSchedule S421Parser::parseSchedule(pugi::xml_node node) {
             }
             else if (name.find("RouteScheduleCalculated") != std::string::npos) {
                 if (!sched.calculated) sched.calculated = std::make_unique<RouteScheduleCalculated>();
+                fieldspec::readFields(child, sched.calculated.get(),
+                                      fieldspec::kRouteScheduleCalculatedFields,
+                                      fieldspec::kRouteScheduleCalculatedFieldsCount);
                 for (pugi::xml_node elemRef : child.children("routeScheduleElement")) {
                     const char* href = elemRef.attribute("xlink:href").value();
                     pugi::xml_node elemNode = resolveRef(docRoot, href);
@@ -909,6 +777,9 @@ RouteSchedule S421Parser::parseSchedule(pugi::xml_node node) {
             }
             else if (name.find("RouteScheduleRecommended") != std::string::npos) {
                 if (!sched.recommended) sched.recommended = std::make_unique<RouteScheduleRecommended>();
+                fieldspec::readFields(child, sched.recommended.get(),
+                                      fieldspec::kRouteScheduleRecommendedFields,
+                                      fieldspec::kRouteScheduleRecommendedFieldsCount);
                 for (pugi::xml_node elemRef : child.children("routeScheduleElement")) {
                     const char* href = elemRef.attribute("xlink:href").value();
                     pugi::xml_node elemNode = resolveRef(docRoot, href);
@@ -924,23 +795,20 @@ RouteSchedule S421Parser::parseSchedule(pugi::xml_node node) {
 }
 
 // ============================================================
-//  parseScheduleElement
+//  parseScheduleElement —— 简单字段走表；保留一处大小写历史容错
 // ============================================================
 RouteScheduleElement S421Parser::parseScheduleElement(pugi::xml_node node) {
     RouteScheduleElement elem;
 
-    // routeWaypointID 大小写：2.0 用大写 ID，旧版小写 Id；先取大写，取不到回退小写
-    pugi::xml_node wpIdNode = node.child("routeWaypointID");
-    if (wpIdNode.empty()) wpIdNode = node.child("routeWaypointId");
-    elem.waypointId = wpIdNode.text().as_int();
-    elem.planSOG = node.child("routeScheduleElementPlanSOG").text().as_double();
-    elem.etd = node.child("routeScheduleElementETD").text().get();
-    elem.eta = node.child("routeScheduleElementETA").text().get();
-    elem.etdWindowBefore = getOptInt(node, "routeScheduleElementETDWindowBefore");
-    elem.etdWindowAfter = getOptInt(node, "routeScheduleElementETDWindowAfter");
-    elem.etaWindowBefore = getOptInt(node, "routeScheduleElementETAWindowBefore");
-    elem.etaWindowAfter = getOptInt(node, "routeScheduleElementETAWindowAfter");
-    elem.note = getOptText(node, "routeScheduleElementNote");
+    fieldspec::readFields(node, &elem,
+                          fieldspec::kRouteScheduleElementFields,
+                          fieldspec::kRouteScheduleElementFieldsCount);
+
+    // 历史容错：1.x 用小写 routeWaypointId（2.0 权威名 routeWaypointID）
+    if (elem.waypointId == 0) {
+        pugi::xml_node wpIdNode = node.child("routeWaypointId");
+        if (!wpIdNode.empty()) elem.waypointId = wpIdNode.text().as_int();
+    }
 
     return elem;
 }

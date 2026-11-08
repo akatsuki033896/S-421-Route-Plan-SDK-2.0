@@ -376,7 +376,6 @@
             <routeActionPoint xlink:href="#RTE.APT.0" xlink:title="routeActionPointComposition" />
         </RouteActionPoints>
         <RouteActionPoint gml:id="RTE.APT.0">
-            <routeActionPointID>0</routeActionPointID>
             <routeActionPointRequiredAction>Report</routeActionPointRequiredAction>
             <routeActionPointRequiredActionDescription>Report to VTS</routeActionPointRequiredActionDescription>
             <routeActionPointCollection xlink:href="#RTE.APTS" xlink:title="routeActionPointComposition" />
