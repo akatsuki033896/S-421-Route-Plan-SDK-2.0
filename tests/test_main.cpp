@@ -180,7 +180,7 @@ std::unique_ptr<s421::Dataset> makeSampleDataset() {
     ap1.name = std::string("AP Report");
     ap1.externalRef = "https://example.com/ap1";
     ap1.geometry = s421::GM_Point(59.3, 24.8);
-    ap1.radius = 2.5;
+    ap1.distance = 2.5;
     ap1.timeToAct = 60.0;
     ap1.requiredAction = s421::ActionType::Report;
     ap1.actionDescription = "Contact VTS on approach";

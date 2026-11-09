@@ -22,8 +22,9 @@ int main(int argc, char* argv[]) {
     SetConsoleOutputCP(65001);  // 控制台 UTF-8，避免中文乱码
 #endif
 
-    const std::string file = (argc >= 2) ? argv[1]
-                            : "../../dataset/RTE-TEST-GBASIC_20260604.s421";
+    // const std::string file = (argc >= 2) ? argv[1] : "../../S-421/RTE-TEST-GBASIC.gml";
+
+    const std::string file = (argc >= 2) ? argv[1] : "../../test.gml";
 
     // 1) 解析（.s421p 走压缩解析，其余走直接 XML 解析）
     s421::S421Parser parser;

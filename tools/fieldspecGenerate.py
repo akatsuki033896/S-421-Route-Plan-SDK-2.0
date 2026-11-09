@@ -8,7 +8,7 @@ fieldspecGenerate.py - 从 S-421 XSD 生成/校验字段映射表（GMLAS 式 "s
     python3 tools/fieldspecGenerate.py --check    # 校验已生成文件是否与 XSD 同步（CI 用，不同步则退出码 1）
 
 做什么：
-    1. 解析 dataset/S-421_schema_20260604.xsd；
+    1. 解析 xsd
     2. 把本仓库维护的「元素 ↔ 模型成员」映射（FIELD_MAP）与 XSD 逐元素交叉校验：
        - 映射里的元素在 XSD 中缺失            → 硬错误（改名/删除未同步）
        - XSD 简单字段不在映射里               → 硬错误（新增字段未映射，强迫显式决策）
@@ -17,15 +17,14 @@ fieldspecGenerate.py - 从 S-421 XSD 生成/校验字段映射表（GMLAS 式 "s
        - gml:ReferenceType / geometry 等结构性元素 → 跳过并在生成头注释中登记
     3. 生成 src/S421FieldTable.h（含 per 类 FieldSpec 数组，顺序 = XSD sequence 顺序）。
 
-设计意图：XSD 是唯一事实源。标准升级（如 2.0 → 2.1）时，改 XSD 后跑本脚本，
-凡漂移处直接报错，错误在"生成期"暴露，而不是像 2.0 升级那样在四处手写代码间
-静默失配、直到编译/联调才被发现。
+设计意图：XSD 是唯一事实源。标准更改时，改 XSD 后跑本脚本，
+凡漂移处直接报错，错误在"生成期"暴露，而不是像 2.0 升级那样在四处手写代码间静默失配、直到编译/联调才被发现。
 """
 
 import sys
 import xml.etree.ElementTree as ET
 
-XSD_PATH = "dataset/S-421_schema_20260604.xsd"
+XSD_PATH = "s-421/S-421_schema_2.0.0.xsd"
 OUT_PATH = "src/S421FieldTable.h"
 
 XS_NS = "http://www.w3.org/2001/XMLSchema"
@@ -44,7 +43,7 @@ TYPE_ALLOWED = {
     "routeInfoStatusType": {"EnumStatus"},
     "routeWaypointLegGeometryTypeType": {"EnumGeometry"},
     "routeActionPointRequiredActionType": {"EnumAction"},
-    "typeOfShipType": {"OptEnumShip"},
+    "routeInfoVesselTypeType": {"OptEnumShip"},
     "gml:ReferenceType": set(),          # 结构性引用：跳过
 }
 
@@ -97,7 +96,7 @@ FIELD_MAP = {
         ("routeInfoArrivalPortCall", "arrivalPortCall", "OptString"),
         ("routeInfoReferencePrevRoute", "referencePrevRoute", "OptString"),
         ("routeInfoReferenceNextRoute", "referenceNextRoute", "OptString"),
-        ("typeOfShip", "vesselType", "OptEnumShip"),
+        ("routeInfoVesselType", "vesselType", "OptEnumShip"),
         ("routeInfoVesselName", "vesselName", "OptString"),
         ("routeInfoVesselMMSI", "vesselMMSI", "String"),
         ("routeInfoVesselCallsign", "vesselCallsign", "OptString"),
@@ -150,8 +149,8 @@ FIELD_MAP = {
         ("routeActionPointID", "id", "Int"),
         ("routeActionPointName", "name", "OptString"),
         ("routeActionPointExternalReference", "externalRef", "OptString"),
-        ("routeActionPointRadius", "radius", "Double"),
-        ("routeActionPointTimetoAct", "timeToAct", "Double"),
+        ("routeActionPointDistance", "distance", "Double"),
+        ("routeActionPointTimeToAct", "timeToAct", "Double"),
         ("routeActionPointRequiredAction", "requiredAction", "EnumAction"),
         ("routeActionPointRequiredActionDescription", "actionDescription", "String"),
         ("routeActionPointExtensions", "extensions", "ExtensionsWrapped"),

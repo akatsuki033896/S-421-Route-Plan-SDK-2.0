@@ -23,8 +23,8 @@
  * 仍由 Parser/Serializer 的手写代码处理——它们不是"字段"，而是对象图结构。
  */
 
-#include <s421/S421DataModel.h>
-#include <pugixml.hpp>
+#include "../include/s421/S421DataModel.h"
+#include "../third_party/pugixml/pugixml.hpp"
 
 #include <cstddef>
 #include <cstring>
@@ -52,7 +52,7 @@ enum class FieldType {
     EnumStatus,   ///< RouteInfoStatus（按值，XSD routeInfoStatusType）
     EnumGeometry, ///< LegGeometryType（按值，XSD routeWaypointLegGeometryTypeType）
     EnumAction,   ///< ActionType（按值，XSD routeActionPointRequiredActionType）
-    OptEnumShip,  ///< optional<TypeOfShip>（XSD typeOfShipType）
+    OptEnumShip,  ///< optional<VesselType>（XSD VesselTypeType）
     Extensions,   ///< optional<RouteExtensions>
 };
 
@@ -308,7 +308,7 @@ inline void readFields(pugi::xml_node node, void* obj,
             readEnum(node, f.xmlName, *static_cast<ActionType*>(m));
             break;
         case FieldType::OptEnumShip:
-            readOptEnum(node, f.xmlName, *static_cast<optional<TypeOfShip>*>(m));
+            readOptEnum(node, f.xmlName, *static_cast<optional<VesselType>*>(m));
             break;
         case FieldType::Extensions:
             readExtensionsField(node, f, *static_cast<optional<RouteExtensions>*>(m));
@@ -379,7 +379,7 @@ inline void writeFields(pugi::xml_node parent, const void* obj,
             writeText(parent, f.xmlName, toString(*static_cast<const ActionType*>(m)));
             break;
         case FieldType::OptEnumShip: {
-            const optional<TypeOfShip>& v = *static_cast<const optional<TypeOfShip>*>(m);
+            const optional<VesselType>& v = *static_cast<const optional<VesselType>*>(m);
             if (v.has_value()) writeText(parent, f.xmlName, toString(v.value()));
             break;
         }

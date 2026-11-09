@@ -8,7 +8,7 @@
  *   1. 枚举在 XML 中不再是整数编码，而是可读文本（如 "Planned" 而非 "2"）。
  *   2. `RouteInfoStatus::Acknowledged` 改名为 `Checked`。
  *   3. `ActionType` 删除 `Reserved1-5`，新增 `CriticalPoint` / `Others`。
- *   4. 删除 `VesselType`（旧 AIS 数字编码），新增 `TypeOfShip`（业务船型文本）。
+ *   4. 删除 `VesselType`（旧 AIS 数字编码），新增 `VesselType`（业务船型文本）。
  *
  * 因此每个枚举都配一对函数：
  *   - `toString()`   —— 枚举 → 文本（序列化写 XML 时用）
@@ -235,14 +235,11 @@ inline bool fromString(const std::string& s, ActionType& out) {
 }
 
 /**
- * @enum TypeOfShip
- * @brief 船舶类型枚举（XSD: `typeOfShipType`）。
+ * @enum VesselType
+ * @brief 船舶类型枚举（XSD: `routeInfoVesselType`）。
  *
- * Edition 2.0 用 `typeOfShip` 取代旧版 `routeInfoVesselType`（AIS 数字编码）。
- * 新枚举使用更通用的业务船型文本，更贴近实际船舶分类语义。
- * 完整列表来自 `S-421_schema_20260604.xsd` 中的 `typeOfShipType` 定义。
  */
-enum class TypeOfShip : int {
+enum class VesselType : int {
     GeneralCargoVessel   = 1,    ///< 杂货船
     ContainerVessel      = 2,    ///< 集装箱船
     Tanker               = 3,    ///< 油轮
@@ -265,23 +262,23 @@ enum class TypeOfShip : int {
  * @param t 船型。
  * @return 对应文本；未知值返回 `"Unknown"`。
  */
-inline const char* toString(TypeOfShip t) {
+inline const char* toString(VesselType t) {
     switch (t) {
-        case TypeOfShip::GeneralCargoVessel:   return "General Cargo Vessel";
-        case TypeOfShip::ContainerVessel:      return "Container Vessel";
-        case TypeOfShip::Tanker:               return "Tanker";
-        case TypeOfShip::SailingVessel:        return "Sailing Vessel";
-        case TypeOfShip::FishingVessel:        return "Fishing Vessel";
-        case TypeOfShip::SpecialPurposeVessel: return "Special Purpose Vessel";
-        case TypeOfShip::ManOfWar:             return "Man of War";
-        case TypeOfShip::Submarine:            return "Submarine";
-        case TypeOfShip::HighSpeedCraft:       return "High Speed Craft";
-        case TypeOfShip::BulkCarrier:          return "Bulk Carrier";
-        case TypeOfShip::Seaplane:             return "Seaplane";
-        case TypeOfShip::Tugboat:              return "Tugboat";
-        case TypeOfShip::PassengerVessel:      return "Passenger Vessel";
-        case TypeOfShip::Ferry:                return "Ferry";
-        case TypeOfShip::Boat:                 return "Boat";
+        case VesselType::GeneralCargoVessel:   return "General Cargo Vessel";
+        case VesselType::ContainerVessel:      return "Container Vessel";
+        case VesselType::Tanker:               return "Tanker";
+        case VesselType::SailingVessel:        return "Sailing Vessel";
+        case VesselType::FishingVessel:        return "Fishing Vessel";
+        case VesselType::SpecialPurposeVessel: return "Special Purpose Vessel";
+        case VesselType::ManOfWar:             return "Man of War";
+        case VesselType::Submarine:            return "Submarine";
+        case VesselType::HighSpeedCraft:       return "High Speed Craft";
+        case VesselType::BulkCarrier:          return "Bulk Carrier";
+        case VesselType::Seaplane:             return "Seaplane";
+        case VesselType::Tugboat:              return "Tugboat";
+        case VesselType::PassengerVessel:      return "Passenger Vessel";
+        case VesselType::Ferry:                return "Ferry";
+        case VesselType::Boat:                 return "Boat";
     }
     return "Unknown";
 }
@@ -292,23 +289,23 @@ inline const char* toString(TypeOfShip t) {
  * @param out 输出参数，成功时写入结果。
  * @return `true` = 成功；`false` = 文本不匹配。
  */
-inline bool fromString(const std::string& s, TypeOfShip& out) {
+inline bool fromString(const std::string& s, VesselType& out) {
     std::string n = detail::normalize(s);
-    if (n == "generalcargovessel")   { out = TypeOfShip::GeneralCargoVessel;   return true; }
-    if (n == "containervessel")      { out = TypeOfShip::ContainerVessel;      return true; }
-    if (n == "tanker")               { out = TypeOfShip::Tanker;               return true; }
-    if (n == "sailingvessel")        { out = TypeOfShip::SailingVessel;        return true; }
-    if (n == "fishingvessel")        { out = TypeOfShip::FishingVessel;        return true; }
-    if (n == "specialpurposevessel") { out = TypeOfShip::SpecialPurposeVessel; return true; }
-    if (n == "manofwar")             { out = TypeOfShip::ManOfWar;             return true; }
-    if (n == "submarine")            { out = TypeOfShip::Submarine;            return true; }
-    if (n == "highspeedcraft")       { out = TypeOfShip::HighSpeedCraft;       return true; }
-    if (n == "bulkcarrier")          { out = TypeOfShip::BulkCarrier;          return true; }
-    if (n == "seaplane")             { out = TypeOfShip::Seaplane;             return true; }
-    if (n == "tugboat")              { out = TypeOfShip::Tugboat;              return true; }
-    if (n == "passengervessel")      { out = TypeOfShip::PassengerVessel;      return true; }
-    if (n == "ferry")                { out = TypeOfShip::Ferry;                return true; }
-    if (n == "boat")                 { out = TypeOfShip::Boat;                 return true; }
+    if (n == "generalcargovessel")   { out = VesselType::GeneralCargoVessel;   return true; }
+    if (n == "containervessel")      { out = VesselType::ContainerVessel;      return true; }
+    if (n == "tanker")               { out = VesselType::Tanker;               return true; }
+    if (n == "sailingvessel")        { out = VesselType::SailingVessel;        return true; }
+    if (n == "fishingvessel")        { out = VesselType::FishingVessel;        return true; }
+    if (n == "specialpurposevessel") { out = VesselType::SpecialPurposeVessel; return true; }
+    if (n == "manofwar")             { out = VesselType::ManOfWar;             return true; }
+    if (n == "submarine")            { out = VesselType::Submarine;            return true; }
+    if (n == "highspeedcraft")       { out = VesselType::HighSpeedCraft;       return true; }
+    if (n == "bulkcarrier")          { out = VesselType::BulkCarrier;          return true; }
+    if (n == "seaplane")             { out = VesselType::Seaplane;             return true; }
+    if (n == "tugboat")              { out = VesselType::Tugboat;              return true; }
+    if (n == "passengervessel")      { out = VesselType::PassengerVessel;      return true; }
+    if (n == "ferry")                { out = VesselType::Ferry;                return true; }
+    if (n == "boat")                 { out = VesselType::Boat;                 return true; }
     return false;
 }
 

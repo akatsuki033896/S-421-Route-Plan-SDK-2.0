@@ -42,7 +42,7 @@ namespace s421
 
 /**
  * @class RouteInfo
- * @brief 航线元数据
+ * @brief 航线基础信息
  *
  * 对应 XSD: `complexType name="RouteInfo"`。
  * 对应 FC: `InformationType "Route Info"`。
@@ -70,7 +70,7 @@ public:
     s421::optional<std::string> referencePrevRoute; ///< 上一段航线的引用
     s421::optional<std::string> referenceNextRoute; ///< 下一段航线的引用
 
-    s421::optional<TypeOfShip> vesselType;      ///< 船舶类型
+    s421::optional<VesselType> vesselType;      ///< 船舶类型
     s421::optional<std::string> vesselName;     ///< 船名（如 `"BALTIC BRIGHT"`）
     std::string vesselMMSI;                     ///< MMSI 码（9 位数字，船舶唯一标识）
     s421::optional<std::string> vesselCallsign; ///< 呼号
@@ -209,7 +209,7 @@ public:
     s421::optional<std::string> name;                    ///< 动作点名称(可选)
     s421::optional<std::string> externalRef;             ///< 外部引用(可选)
     GM_Point geometry;                                   ///< 动作点的地理位置
-    double radius;                                       ///< 执行动作距离（海里）
+    double distance;                                     ///< 执行动作距离（海里）
     double timeToAct;                                    ///< 执行时间（秒，可选）
     ActionType requiredAction = ActionType::UserDefined; ///< 需要执行的动作类型
     std::string actionDescription;                       ///< 动作描述（如 `"通过报告线时联系 VTS"`）

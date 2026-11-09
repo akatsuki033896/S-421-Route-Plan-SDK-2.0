@@ -227,7 +227,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                 for (const auto& elem : sched.manual->elements) {
                     std::string key = "MANUAL." + std::to_string(sid) + "." + std::to_string(elemSeq);
                     std::string elemId = ids.elementIds.at(key);
-                    writeRef(manNode, "routeScheduleElement", elemId,
+                    writeRef(manNode, "routeScheduleElementManual", elemId,
                              "http://www.iho.int/gml/roles/routeScheduleElement");
                     elemSeq++;
                 }
@@ -261,7 +261,7 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                 for (const auto& elem : sched.calculated->elements) {
                     std::string key = "CALC." + std::to_string(sid) + "." + std::to_string(elemSeq);
                     std::string elemId = ids.elementIds.at(key);
-                    writeRef(calNode, "routeScheduleElement", elemId,
+                    writeRef(calNode, "routeScheduleElementCalculated", elemId,
                              "http://www.iho.int/gml/roles/routeScheduleElement");
                     elemSeq++;
                 }
@@ -295,8 +295,8 @@ bool S421Serializer::buildDocument(pugi::xml_document& doc, const Dataset& datas
                 for (const auto& elem : sched.recommended->elements) {
                     std::string key = "REC." + std::to_string(sid) + "." + std::to_string(elemSeq);
                     std::string elemId = ids.elementIds.at(key);
-                    writeRef(recNode, "routeScheduleElement", elemId,
-                             "http://www.iho.int/gml/roles/routeScheduleCollection");
+                    writeRef(recNode, "routeScheduleElementRecommended", elemId,
+                             "http://www.iho.int/gml/roles/routeScheduleElement");
                     elemSeq++;
                 }
 
@@ -720,11 +720,11 @@ static const char* xlinkTitleFor(const char* parentName, const char* childName) 
         {"RouteSchedule",        "routeScheduleRecommended",           "routeScheduleRecommendedComposition"},
         // ---- Manual / Calculated / Recommended 容器 ----
         {"RouteScheduleManual",       "routeScheduleCollection",              "routeScheduleManualComposition"},
-        {"RouteScheduleManual",       "routeScheduleElement",                 "routeScheduleElementManualComposition"},
+        {"RouteScheduleManual",       "routeScheduleElementManual",           "routeScheduleElementManualComposition"},
         {"RouteScheduleCalculated",   "routeScheduleCollection",              "routeScheduleCalculatedComposition"},
-        {"RouteScheduleCalculated",   "routeScheduleElement",                 "routeScheduleElementCalculatedComposition"},
+        {"RouteScheduleCalculated",   "routeScheduleElementCalculated",       "routeScheduleElementCalculatedComposition"},
         {"RouteScheduleRecommended",  "routeScheduleCollection",              "routeScheduleRecommendedComposition"},
-        {"RouteScheduleRecommended",  "routeScheduleElement",                 "routeScheduleElementRecommendedComposition"},
+        {"RouteScheduleRecommended",  "routeScheduleElementRecommended",      "routeScheduleElementRecommendedComposition"},
         // ---- ScheduleElement 回指各自的集合 ----
         {"RouteScheduleElement", "routeScheduleElementManualCollection",      "routeScheduleElementManualComposition"},
         {"RouteScheduleElement", "routeScheduleElementCalculatedCollection",  "routeScheduleElementCalculatedComposition"},

@@ -16,9 +16,10 @@ namespace fieldspec {
 
 // ---- RouteInfoType -> s421::RouteInfo ----
 // 结构性: 注: <routeInfoExtensions> 在 XSD 中直接引用 routeExtensionsType（其余包装元素均为各自 *ExtensionsType）——XSD 瑕疵，运行时保持嵌套形状
+// 结构性: routeInfoCollection (gml:ReferenceType)
 static const FieldSpec kRouteInfoFields[] = {
     field("routeInfoName", FieldType::String, true, &s421::RouteInfo::name),
-    field("routeInfoAuthor", FieldType::String, false, &s421::RouteInfo::author),
+    field("routeInfoAuthor", FieldType::String, true, &s421::RouteInfo::author),
     field("routeInfoEditionTime", FieldType::String, false, &s421::RouteInfo::editionTime),
     field("routeInfoDescription", FieldType::String, false, &s421::RouteInfo::description),
     field("routeInfoStatus", FieldType::EnumStatus, true, &s421::RouteInfo::status),
@@ -33,7 +34,7 @@ static const FieldSpec kRouteInfoFields[] = {
     field("routeInfoArrivalPortCall", FieldType::OptString, false, &s421::RouteInfo::arrivalPortCall),
     field("routeInfoReferencePrevRoute", FieldType::OptString, false, &s421::RouteInfo::referencePrevRoute),
     field("routeInfoReferenceNextRoute", FieldType::OptString, false, &s421::RouteInfo::referenceNextRoute),
-    field("typeOfShip", FieldType::OptEnumShip, false, &s421::RouteInfo::vesselType),
+    field("routeInfoVesselType", FieldType::OptEnumShip, false, &s421::RouteInfo::vesselType),
     field("routeInfoVesselName", FieldType::OptString, false, &s421::RouteInfo::vesselName),
     field("routeInfoVesselMMSI", FieldType::String, false, &s421::RouteInfo::vesselMMSI),
     field("routeInfoVesselCallsign", FieldType::OptString, false, &s421::RouteInfo::vesselCallsign),
@@ -52,6 +53,7 @@ static const size_t kRouteInfoFieldsCount =
     sizeof(kRouteInfoFields) / sizeof(kRouteInfoFields[0]);
 
 // ---- RouteScheduleType -> s421::RouteSchedule ----
+// 结构性: 注: <routeScheduleExtensions> 在 XSD 中直接引用 routeExtensionsType（其余包装元素均为各自 *ExtensionsType）——XSD 瑕疵，运行时保持嵌套形状
 // 结构性: routeScheduleCollection (gml:ReferenceType)
 // 结构性: routeScheduleManual (gml:ReferenceType)
 // 结构性: routeScheduleCalculated (gml:ReferenceType)
@@ -65,8 +67,9 @@ static const size_t kRouteScheduleFieldsCount =
     sizeof(kRouteScheduleFields) / sizeof(kRouteScheduleFields[0]);
 
 // ---- RouteScheduleManualType -> s421::RouteScheduleManual ----
-// 结构性: routeScheduleCollection (gml:ReferenceType)
-// 结构性: routeScheduleElement (gml:ReferenceType)
+// 结构性: 注: <routeScheduleManualExtensions> 在 XSD 中直接引用 routeExtensionsType（其余包装元素均为各自 *ExtensionsType）——XSD 瑕疵，运行时保持嵌套形状
+// 结构性: routeScheduleManualCollection (gml:ReferenceType)
+// 结构性: routeScheduleElementManual (gml:ReferenceType)
 static const FieldSpec kRouteScheduleManualFields[] = {
     field("routeScheduleManualExtensions", FieldType::Extensions, false, &s421::RouteScheduleManual::extensions, 1, "routeScheduleManualExtensions"),
 };
@@ -74,8 +77,9 @@ static const size_t kRouteScheduleManualFieldsCount =
     sizeof(kRouteScheduleManualFields) / sizeof(kRouteScheduleManualFields[0]);
 
 // ---- RouteScheduleCalculatedType -> s421::RouteScheduleCalculated ----
-// 结构性: routeScheduleCollection (gml:ReferenceType)
-// 结构性: routeScheduleElement (gml:ReferenceType)
+// 结构性: 注: <routeScheduleCalculatedExtensions> 在 XSD 中直接引用 routeExtensionsType（其余包装元素均为各自 *ExtensionsType）——XSD 瑕疵，运行时保持嵌套形状
+// 结构性: routeScheduleCalculatedCollection (gml:ReferenceType)
+// 结构性: routeScheduleElementCalculated (gml:ReferenceType)
 static const FieldSpec kRouteScheduleCalculatedFields[] = {
     field("routeScheduleCalculatedExtensions", FieldType::Extensions, false, &s421::RouteScheduleCalculated::extensions, 1, "routeScheduleCalculatedExtensions"),
 };
@@ -83,8 +87,9 @@ static const size_t kRouteScheduleCalculatedFieldsCount =
     sizeof(kRouteScheduleCalculatedFields) / sizeof(kRouteScheduleCalculatedFields[0]);
 
 // ---- RouteScheduleRecommendedType -> s421::RouteScheduleRecommended ----
-// 结构性: routeScheduleCollection (gml:ReferenceType)
-// 结构性: routeScheduleElement (gml:ReferenceType)
+// 结构性: 注: <routeScheduleRecommendedExtensions> 在 XSD 中直接引用 routeExtensionsType（其余包装元素均为各自 *ExtensionsType）——XSD 瑕疵，运行时保持嵌套形状
+// 结构性: routeScheduleRecommendedCollection (gml:ReferenceType)
+// 结构性: routeScheduleElementRecommended (gml:ReferenceType)
 static const FieldSpec kRouteScheduleRecommendedFields[] = {
     field("routeScheduleRecommendedExtensions", FieldType::Extensions, false, &s421::RouteScheduleRecommended::extensions, 1, "routeScheduleRecommendedExtensions"),
 };
@@ -92,9 +97,11 @@ static const size_t kRouteScheduleRecommendedFieldsCount =
     sizeof(kRouteScheduleRecommendedFields) / sizeof(kRouteScheduleRecommendedFields[0]);
 
 // ---- RouteScheduleElementType -> s421::RouteScheduleElement ----
+// 结构性: 注: <routeScheduleElementExtensions> 在 XSD 中直接引用 routeExtensionsType（其余包装元素均为各自 *ExtensionsType）——XSD 瑕疵，运行时保持嵌套形状
 // 结构性: routeScheduleElementManualCollection (gml:ReferenceType)
 // 结构性: routeScheduleElementCalculatedCollection (gml:ReferenceType)
 // 结构性: routeScheduleElementRecommendedCollection (gml:ReferenceType)
+// 结构性: targetWaypoint (gml:ReferenceType)
 static const FieldSpec kRouteScheduleElementFields[] = {
     field("routeScheduleElementExtensions", FieldType::Extensions, false, &s421::RouteScheduleElement::extensions, 1, "routeScheduleElementExtensions"),
     field("routeWaypointID", FieldType::Int, true, &s421::RouteScheduleElement::waypointId),
@@ -125,7 +132,8 @@ static const size_t kRouteFieldsCount =
     sizeof(kRouteFields) / sizeof(kRouteFields[0]);
 
 // ---- RouteWaypointType -> s421::RouteWaypoint ----
-// 结构性: targetWaypoint (gml:ReferenceType)
+// 结构性: 注: <routeWaypointExtensions> 在 XSD 中直接引用 routeExtensionsType（其余包装元素均为各自 *ExtensionsType）——XSD 瑕疵，运行时保持嵌套形状
+// 结构性: scheduleOf (gml:ReferenceType)
 // 结构性: routeWaypointCollection (gml:ReferenceType)
 // 结构性: routeWaypointLeg (gml:ReferenceType)
 // 结构性: geometry (S100 几何属性)
@@ -134,53 +142,54 @@ static const FieldSpec kRouteWaypointFields[] = {
     field("routeWaypointName", FieldType::String, false, &s421::RouteWaypoint::name),
     field("routeWaypointExternalReferenceID", FieldType::OptString, false, &s421::RouteWaypoint::externalRefID),
     field("routeWaypointFixed", FieldType::Bool, false, &s421::RouteWaypoint::fixed),
-    field("routeWaypointTurnRadius", FieldType::Double, true, &s421::RouteWaypoint::turnRadius, 6),
+    field("routeWaypointTurnRadius", FieldType::Double, false, &s421::RouteWaypoint::turnRadius, 6),
     field("routeWaypointExtensions", FieldType::Extensions, false, &s421::RouteWaypoint::extensions, 1, "routeWaypointExtensions"),
 };
 static const size_t kRouteWaypointFieldsCount =
     sizeof(kRouteWaypointFields) / sizeof(kRouteWaypointFields[0]);
 
 // ---- RouteWaypointLegType -> s421::RouteWaypointLeg ----
+// 结构性: 注: <routeWaypointLegExtensions> 在 XSD 中直接引用 routeExtensionsType（其余包装元素均为各自 *ExtensionsType）——XSD 瑕疵，运行时保持嵌套形状
 // 结构性: routeWaypointLegCollection (gml:ReferenceType)
-// 结构性: geometry (S100 几何属性)
 static const FieldSpec kRouteWaypointLegFields[] = {
-    field("routeWaypointLegAirDraftMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::airDraftMax, 1),
-    field("routeWaypointLegBeamMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::beamMax, 1),
-    field("routeWaypointLegDraft", FieldType::OptDouble, false, &s421::RouteWaypointLeg::draft, 1),
-    field("routeWaypointLegDraftAft", FieldType::OptDouble, false, &s421::RouteWaypointLeg::draftAft, 1),
-    field("routeWaypointLegDraftForward", FieldType::OptDouble, false, &s421::RouteWaypointLeg::draftForward, 1),
-    field("routeWaypointLegDraftMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::draftMax, 1),
-    field("routeWaypointLegDynamicUKC", FieldType::OptDouble, false, &s421::RouteWaypointLeg::dynamicUKC, 1),
-    field("routeWaypointLegGeometryType", FieldType::EnumGeometry, true, &s421::RouteWaypointLeg::geometryType),
-    field("routeWaypointLegIssue", FieldType::OptString, false, &s421::RouteWaypointLeg::issue),
-    field("routeWaypointLegLengthMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::lengthMax, 1),
-    field("routeWaypointLegNote", FieldType::OptString, false, &s421::RouteWaypointLeg::note),
-    field("routeWaypointLegPortCL", FieldType::OptInt, false, &s421::RouteWaypointLeg::portCL),
+    field("routeWaypointLegStarboardXTDL", FieldType::OptInt, false, &s421::RouteWaypointLeg::starboardXTDL),
     field("routeWaypointLegPortXTDL", FieldType::OptInt, false, &s421::RouteWaypointLeg::portXTDL),
+    field("routeWaypointLegStarboardCL", FieldType::OptInt, false, &s421::RouteWaypointLeg::starboardCL),
+    field("routeWaypointLegPortCL", FieldType::OptInt, false, &s421::RouteWaypointLeg::portCL),
     field("routeWaypointLegSafetyContour", FieldType::OptDouble, false, &s421::RouteWaypointLeg::safetyContour, 1),
     field("routeWaypointLegSafetyDepth", FieldType::OptDouble, false, &s421::RouteWaypointLeg::safetyDepth, 1),
-    field("routeWaypointLegSafetyMargin", FieldType::OptDouble, false, &s421::RouteWaypointLeg::safetyMargin, 1),
-    field("routeWaypointLegSOGMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::sogMax, 1),
+    field("routeWaypointLegGeometryType", FieldType::EnumGeometry, true, &s421::RouteWaypointLeg::geometryType),
     field("routeWaypointLegSOGMin", FieldType::OptDouble, false, &s421::RouteWaypointLeg::sogMin, 1),
-    field("routeWaypointLegStarboardCL", FieldType::OptInt, false, &s421::RouteWaypointLeg::starboardCL),
-    field("routeWaypointLegStarboardXTDL", FieldType::OptInt, false, &s421::RouteWaypointLeg::starboardXTDL),
-    field("routeWaypointLegStaticUKC", FieldType::OptDouble, false, &s421::RouteWaypointLeg::staticUKC, 1),
-    field("routeWaypointLegSTWMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::stwMax, 1),
+    field("routeWaypointLegSOGMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::sogMax, 1),
     field("routeWaypointLegSTWMin", FieldType::OptDouble, false, &s421::RouteWaypointLeg::stwMin, 1),
+    field("routeWaypointLegSTWMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::stwMax, 1),
+    field("routeWaypointLegDraft", FieldType::OptDouble, false, &s421::RouteWaypointLeg::draft, 1),
+    field("routeWaypointLegDraftForward", FieldType::OptDouble, false, &s421::RouteWaypointLeg::draftForward, 1),
+    field("routeWaypointLegDraftAft", FieldType::OptDouble, false, &s421::RouteWaypointLeg::draftAft, 1),
+    field("routeWaypointLegDraftMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::draftMax, 1),
+    field("routeWaypointLegAirDraftMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::airDraftMax, 1),
+    field("routeWaypointLegBeamMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::beamMax, 1),
+    field("routeWaypointLegLengthMax", FieldType::OptDouble, false, &s421::RouteWaypointLeg::lengthMax, 1),
+    field("routeWaypointLegStaticUKC", FieldType::OptDouble, false, &s421::RouteWaypointLeg::staticUKC, 1),
+    field("routeWaypointLegDynamicUKC", FieldType::OptDouble, false, &s421::RouteWaypointLeg::dynamicUKC, 1),
+    field("routeWaypointLegSafetyMargin", FieldType::OptDouble, false, &s421::RouteWaypointLeg::safetyMargin, 1),
+    field("routeWaypointLegNote", FieldType::OptString, false, &s421::RouteWaypointLeg::note),
+    field("routeWaypointLegIssue", FieldType::OptString, false, &s421::RouteWaypointLeg::issue),
     field("routeWaypointLegExtensions", FieldType::Extensions, false, &s421::RouteWaypointLeg::extensions, 1, "routeWaypointLegExtensions"),
 };
 static const size_t kRouteWaypointLegFieldsCount =
     sizeof(kRouteWaypointLegFields) / sizeof(kRouteWaypointLegFields[0]);
 
 // ---- RouteActionPointType -> s421::RouteActionPoint ----
+// 结构性: 注: <routeActionPointExtensions> 在 XSD 中直接引用 routeExtensionsType（其余包装元素均为各自 *ExtensionsType）——XSD 瑕疵，运行时保持嵌套形状
 // 结构性: routeActionPointCollection (gml:ReferenceType)
 // 结构性: geometry (S100 几何属性)
 static const FieldSpec kRouteActionPointFields[] = {
     field("routeActionPointID", FieldType::Int, false, &s421::RouteActionPoint::id),
     field("routeActionPointName", FieldType::OptString, false, &s421::RouteActionPoint::name),
     field("routeActionPointExternalReference", FieldType::OptString, false, &s421::RouteActionPoint::externalRef),
-    field("routeActionPointRadius", FieldType::Double, false, &s421::RouteActionPoint::radius, 1),
-    field("routeActionPointTimetoAct", FieldType::Double, false, &s421::RouteActionPoint::timeToAct, 1),
+    field("routeActionPointDistance", FieldType::Double, false, &s421::RouteActionPoint::distance, 1),
+    field("routeActionPointTimeToAct", FieldType::Double, false, &s421::RouteActionPoint::timeToAct, 1),
     field("routeActionPointRequiredAction", FieldType::EnumAction, true, &s421::RouteActionPoint::requiredAction),
     field("routeActionPointRequiredActionDescription", FieldType::String, true, &s421::RouteActionPoint::actionDescription),
     field("routeActionPointExtensions", FieldType::Extensions, false, &s421::RouteActionPoint::extensions, 1, "routeActionPointExtensions"),

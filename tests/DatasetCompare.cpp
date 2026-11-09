@@ -275,7 +275,7 @@ void cmpActionPoint(Ctx& c, const std::string& p,
     cmpOpt(c, p + ".name", a.name, b.name);
     cmpOpt(c, p + ".externalRef", a.externalRef, b.externalRef);
     cmpPoint(c, p + ".geometry", a.geometry, b.geometry);
-    cmpDouble(c, p + ".radius", a.radius, b.radius);
+    cmpDouble(c, p + ".distance", a.distance, b.distance);
     cmpDouble(c, p + ".timeToAct", a.timeToAct, b.timeToAct);
     cmpEnum(c, p + ".requiredAction", a.requiredAction, b.requiredAction);
     cmpStr(c, p + ".actionDescription", a.actionDescription, b.actionDescription);

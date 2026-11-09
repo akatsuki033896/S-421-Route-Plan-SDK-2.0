@@ -298,6 +298,20 @@ static std::string localName(const std::string& qualifiedName) {
     return (colon != std::string::npos) ? qualifiedName.substr(colon + 1) : qualifiedName;
 }
 
+// 收集 Manual/Calculated/Recommended 容器下的调度元素引用节点
+// 官方 2.0.0 schema 用类型专属引用名（routeScheduleElementManual/
+// routeScheduleElementCalculated/routeScheduleElementRecommended），
+// 旧本地 schema 统一叫 routeScheduleElement——两种都接受，专属名优先
+static std::vector<pugi::xml_node> scheduleElementRefs(pugi::xml_node container,
+                                                       const char* specificName) {
+    std::vector<pugi::xml_node> refs;
+    for (pugi::xml_node ref : container.children(specificName)) refs.push_back(ref);
+    if (refs.empty()) {
+        for (pugi::xml_node ref : container.children("routeScheduleElement")) refs.push_back(ref);
+    }
+    return refs;
+}
+
 // 多策略 ID 查找
 // S-421 标准中 xlink:href 和 gml:id 的命名不一定精确匹配
 // 例如：href="#RTE.WPTS.WPT.1" → gml:id="RTE.WPT.1"
@@ -579,7 +593,7 @@ std::unique_ptr<Dataset> S421Parser::buildFromDoc(pugi::xml_document& doc) {
                             fieldspec::readFields(mIt->second, sched.manual.get(),
                                                   fieldspec::kRouteScheduleManualFields,
                                                   fieldspec::kRouteScheduleManualFieldsCount);
-                            for (pugi::xml_node elemRef : mIt->second.children("routeScheduleElement")) {
+                            for (pugi::xml_node elemRef : scheduleElementRefs(mIt->second, "routeScheduleElementManual")) {
                                 const char* eHref = elemRef.attribute("xlink:href").value();
                                 if (eHref && eHref[0] == '#') {
                                     auto eIt = schedElementNodes.find(eHref + 1);
@@ -602,7 +616,7 @@ std::unique_ptr<Dataset> S421Parser::buildFromDoc(pugi::xml_document& doc) {
                             fieldspec::readFields(cIt->second, sched.calculated.get(),
                                                   fieldspec::kRouteScheduleCalculatedFields,
                                                   fieldspec::kRouteScheduleCalculatedFieldsCount);
-                            for (pugi::xml_node elemRef : cIt->second.children("routeScheduleElement")) {
+                            for (pugi::xml_node elemRef : scheduleElementRefs(cIt->second, "routeScheduleElementCalculated")) {
                                 const char* eHref = elemRef.attribute("xlink:href").value();
                                 if (eHref && eHref[0] == '#') {
                                     auto eIt = schedElementNodes.find(eHref + 1);
@@ -625,7 +639,7 @@ std::unique_ptr<Dataset> S421Parser::buildFromDoc(pugi::xml_document& doc) {
                             fieldspec::readFields(rIt->second, sched.recommended.get(),
                                                   fieldspec::kRouteScheduleRecommendedFields,
                                                   fieldspec::kRouteScheduleRecommendedFieldsCount);
-                            for (pugi::xml_node elemRef : rIt->second.children("routeScheduleElement")) {
+                            for (pugi::xml_node elemRef : scheduleElementRefs(rIt->second, "routeScheduleElementRecommended")) {
                                 const char* eHref = elemRef.attribute("xlink:href").value();
                                 if (eHref && eHref[0] == '#') {
                                     auto eIt = schedElementNodes.find(eHref + 1);
@@ -754,7 +768,7 @@ RouteSchedule S421Parser::parseSchedule(pugi::xml_node node) {
                 fieldspec::readFields(child, sched.manual.get(),
                                       fieldspec::kRouteScheduleManualFields,
                                       fieldspec::kRouteScheduleManualFieldsCount);
-                for (pugi::xml_node elemRef : child.children("routeScheduleElement")) {
+                for (pugi::xml_node elemRef : scheduleElementRefs(child, "routeScheduleElementManual")) {
                     const char* href = elemRef.attribute("xlink:href").value();
                     pugi::xml_node elemNode = resolveRef(docRoot, href);
                     if (!elemNode.empty()) {
@@ -767,7 +781,7 @@ RouteSchedule S421Parser::parseSchedule(pugi::xml_node node) {
                 fieldspec::readFields(child, sched.calculated.get(),
                                       fieldspec::kRouteScheduleCalculatedFields,
                                       fieldspec::kRouteScheduleCalculatedFieldsCount);
-                for (pugi::xml_node elemRef : child.children("routeScheduleElement")) {
+                for (pugi::xml_node elemRef : scheduleElementRefs(child, "routeScheduleElementCalculated")) {
                     const char* href = elemRef.attribute("xlink:href").value();
                     pugi::xml_node elemNode = resolveRef(docRoot, href);
                     if (!elemNode.empty()) {
@@ -780,7 +794,7 @@ RouteSchedule S421Parser::parseSchedule(pugi::xml_node node) {
                 fieldspec::readFields(child, sched.recommended.get(),
                                       fieldspec::kRouteScheduleRecommendedFields,
                                       fieldspec::kRouteScheduleRecommendedFieldsCount);
-                for (pugi::xml_node elemRef : child.children("routeScheduleElement")) {
+                for (pugi::xml_node elemRef : scheduleElementRefs(child, "routeScheduleElementRecommended")) {
                     const char* href = elemRef.attribute("xlink:href").value();
                     pugi::xml_node elemNode = resolveRef(docRoot, href);
                     if (!elemNode.empty()) {

@@ -33,14 +33,14 @@ public:
     ~S421Parser();
 
     /**
-     * @brief 解析 `.s421` 文件（直接 XML；扩展名不拘，`.gml`/`.s421.gml` 等历史名同样可解析）。
+     * @brief 解析 .s421 / .gml 文件。
      * @param filePath 文件路径。
      * @return 解析成功返回 Dataset 对象（调用方获得所有权），失败返回 `nullptr`。
      */
     std::unique_ptr<Dataset> parseFile(const std::string& filePath);
 
     /**
-     * @brief 解析 `.s421p` 压缩容器文件。
+     * @brief 解析 .s421p 压缩容器文件。
      * @param filePath 文件路径。
      * @return 解析成功返回 Dataset 对象（调用方获得所有权），失败返回 `nullptr`。
      */

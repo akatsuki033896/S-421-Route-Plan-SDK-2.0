@@ -1,6 +1,10 @@
 {
   "version": 3,
-  "cmakeMinimumRequired": { "major": 3, "minor": 20, "patch": 0 },
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
   "configurePresets": [
     {
       "name": "base",
@@ -14,8 +18,8 @@
     },
     {
       "name": "sdk",
-      "displayName": "s421 SDK（仅库）",
-      "description": "只构建 s421 库本身（lib / dll），不编译 demo",
+      "displayName": "s421 SDK",
+      "description": "build s421.lib / s421.a",
       "inherits": "base",
       "cacheVariables": {
         "S421_BUILD_EXAMPLES": "OFF"
@@ -23,8 +27,8 @@
     },
     {
       "name": "demo",
-      "displayName": "s421 demo（库 + 调用示例）",
-      "description": "构建 s421 库并编译 examples/demo.cpp",
+      "displayName": "s421 SDK with examples",
+      "description": "build s421 libs and example programs",
       "inherits": "base",
       "cacheVariables": {
         "S421_BUILD_EXAMPLES": "ON"
